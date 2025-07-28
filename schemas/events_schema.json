@@ -1,0 +1,203 @@
+{
+  "name": "events",
+  "description": "Datadog events MCP - search, analyze, and filter events",
+  "tools": [
+    {
+      "name": "search_events",
+      "handler": "mcp.events:search_events_mcp",
+      "description": "Search Datadog events with text query and filtering options",
+      "parameters": {
+        "query": {
+          "type": "string",
+          "description": "Text search query for event titles and content (e.g., 'deployment', 'error', 'restart')",
+          "optional": true
+        },
+        "time_range": {
+          "type": "string",
+          "description": "Time range for search. Options: '1 hour', '4 hours', '1 day', '3 days', '1 week', '1 month'",
+          "optional": true,
+          "default": "1 day"
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["low", "normal", "high"],
+          "description": "Filter by event priority level",
+          "optional": true
+        },
+        "sources": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Filter by event sources (e.g., ['my apps', 'chef', 'puppet', 'kubernetes'])",
+          "optional": true
+        },
+        "tags": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Filter by tags (e.g., ['env:prod', 'service:web'])",
+          "optional": true
+        },
+        "limit": {
+          "type": "number",
+          "description": "Maximum number of events to return",
+          "optional": true,
+          "default": 100
+        }
+      },
+      "examples": [
+        {
+          "description": "Search for deployment events",
+          "call": "search_events(query='deployment', time_range='1 day')"
+        },
+        {
+          "description": "Find high priority events",
+          "call": "search_events(priority='high', time_range='4 hours')"
+        },
+        {
+          "description": "Search for error events from specific source",
+          "call": "search_events(query='error', sources=['my apps'], time_range='1 day')"
+        },
+        {
+          "description": "Find events with specific tags",
+          "call": "search_events(tags=['env:prod', 'service:api'], time_range='2 hours')"
+        }
+      ]
+    },
+    {
+      "name": "get_recent_events",
+      "handler": "mcp.events:get_recent_events_mcp",
+      "description": "Get recent events with optional priority filtering",
+      "parameters": {
+        "time_range": {
+          "type": "string",
+          "description": "Time range for events",
+          "optional": true,
+          "default": "4 hours"
+        },
+        "limit": {
+          "type": "number",
+          "description": "Maximum number of events to return",
+          "optional": true,
+          "default": 50
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["low", "normal", "high"],
+          "description": "Filter by priority level",
+          "optional": true
+        }
+      },
+      "examples": [
+        {
+          "description": "Get recent events",
+          "call": "get_recent_events(time_range='2 hours')"
+        },
+        {
+          "description": "Get recent high priority events",
+          "call": "get_recent_events(priority='high', time_range='1 day')"
+        },
+        {
+          "description": "Get last 20 events",
+          "call": "get_recent_events(limit=20, time_range='1 hour')"
+        }
+      ]
+    },
+    {
+      "name": "get_deployment_events",
+      "handler": "mcp.events:get_deployment_events_mcp",
+      "description": "Get deployment-related events (deploys, releases, builds)",
+      "parameters": {
+        "time_range": {
+          "type": "string",
+          "description": "Time range for deployment events",
+          "optional": true,
+          "default": "1 day"
+        },
+        "service": {
+          "type": "string",
+          "description": "Filter by specific service name",
+          "optional": true
+        },
+        "limit": {
+          "type": "number",
+          "description": "Maximum number of events to return",
+          "optional": true,
+          "default": 50
+        }
+      },
+      "examples": [
+        {
+          "description": "Get all deployment events",
+          "call": "get_deployment_events(time_range='1 day')"
+        },
+        {
+          "description": "Get deployments for specific service",
+          "call": "get_deployment_events(service='web-api', time_range='1 week')"
+        },
+        {
+          "description": "Get recent deployments",
+          "call": "get_deployment_events(time_range='4 hours', limit=20)"
+        }
+      ]
+    },
+    {
+      "name": "analyze_event_patterns",
+      "handler": "mcp.events:analyze_event_patterns_mcp",
+      "description": "Analyze event patterns and extract insights about deployments, errors, and trends",
+      "parameters": {
+        "time_range": {
+          "type": "string",
+          "description": "Time range for analysis",
+          "optional": true,
+          "default": "1 day"
+        }
+      },
+      "examples": [
+        {
+          "description": "Analyze event patterns for the day",
+          "call": "analyze_event_patterns(time_range='1 day')"
+        },
+        {
+          "description": "Analyze recent event trends",
+          "call": "analyze_event_patterns(time_range='4 hours')"
+        },
+        {
+          "description": "Weekly event analysis",
+          "call": "analyze_event_patterns(time_range='1 week')"
+        }
+      ]
+    },
+    {
+      "name": "get_alert_events",
+      "handler": "mcp.events:get_alert_events_mcp",
+      "description": "Get alert and monitoring events specifically",
+      "parameters": {
+        "time_range": {
+          "type": "string",
+          "description": "Time range for alert events",
+          "optional": true,
+          "default": "4 hours"
+        },
+        "limit": {
+          "type": "number",
+          "description": "Maximum number of alert events to return",
+          "optional": true,
+          "default": 100
+        }
+      },
+      "examples": [
+        {
+          "description": "Get recent alert events",
+          "call": "get_alert_events(time_range='2 hours')"
+        },
+        {
+          "description": "Get alert events from last day",
+          "call": "get_alert_events(time_range='1 day', limit=50)"
+        },
+        {
+          "description": "Get monitoring events",
+          "call": "get_alert_events(time_range='4 hours')"
+        }
+      ]
+    }
+  ]
+} 

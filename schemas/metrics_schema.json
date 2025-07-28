@@ -1,0 +1,194 @@
+{
+  "name": "metrics",
+  "description": "Datadog metrics MCP - query, search, and analyze metrics data",
+  "tools": [
+    {
+      "name": "query_metrics",
+      "handler": "mcp.metrics:query_metrics_mcp",
+      "description": "Query Datadog metrics with specific metric queries",
+      "parameters": {
+        "query": {
+          "type": "string",
+          "description": "Metric query string using Datadog syntax (e.g., 'avg:system.cpu.user{*}', 'sum:aws.elb.request_count{env:prod}')",
+          "required": true
+        },
+        "time_range": {
+          "type": "string",
+          "description": "Time range for query. Options: '15 minutes', '1 hour', '4 hours', '1 day', '3 days', '1 week'",
+          "optional": true,
+          "default": "1 hour"
+        }
+      },
+      "examples": [
+        {
+          "description": "Query CPU usage",
+          "call": "query_metrics(query='avg:system.cpu.user{*}', time_range='1 hour')"
+        },
+        {
+          "description": "Query memory usage for specific host",
+          "call": "query_metrics(query='avg:system.mem.used{host:web-01}', time_range='4 hours')"
+        },
+        {
+          "description": "Query request count",
+          "call": "query_metrics(query='sum:trace.requests{service:web-api}', time_range='1 day')"
+        },
+        {
+          "description": "Query AWS ELB metrics",
+          "call": "query_metrics(query='avg:aws.elb.latency{*}', time_range='2 hours')"
+        }
+      ]
+    },
+    {
+      "name": "search_metrics",
+      "handler": "mcp.metrics:search_metrics_mcp",
+      "description": "Search for available metrics by name pattern",
+      "parameters": {
+        "metric_name": {
+          "type": "string",
+          "description": "Partial metric name to search for (e.g., 'cpu', 'memory', 'aws.elb', 'trace.')",
+          "optional": true
+        }
+      },
+      "examples": [
+        {
+          "description": "Search for CPU metrics",
+          "call": "search_metrics(metric_name='cpu')"
+        },
+        {
+          "description": "Search for AWS metrics",
+          "call": "search_metrics(metric_name='aws')"
+        },
+        {
+          "description": "Search for trace metrics",
+          "call": "search_metrics(metric_name='trace')"
+        },
+        {
+          "description": "List all available metrics",
+          "call": "search_metrics()"
+        }
+      ]
+    },
+    {
+      "name": "get_metric_metadata",
+      "handler": "mcp.metrics:get_metric_metadata_mcp",
+      "description": "Get metadata and details for a specific metric",
+      "parameters": {
+        "metric_name": {
+          "type": "string",
+          "description": "Full name of the metric (e.g., 'system.cpu.user', 'aws.elb.request_count')",
+          "required": true
+        }
+      },
+      "examples": [
+        {
+          "description": "Get CPU metric metadata",
+          "call": "get_metric_metadata(metric_name='system.cpu.user')"
+        },
+        {
+          "description": "Get memory metric metadata",
+          "call": "get_metric_metadata(metric_name='system.mem.used')"
+        },
+        {
+          "description": "Get custom metric metadata",
+          "call": "get_metric_metadata(metric_name='custom.app.response_time')"
+        }
+      ]
+    },
+    {
+      "name": "analyze_metric_trends",
+      "handler": "mcp.metrics:analyze_metric_trends_mcp",
+      "description": "Analyze metric trends and detect patterns, anomalies, and insights",
+      "parameters": {
+        "query": {
+          "type": "string",
+          "description": "Metric query string to analyze",
+          "required": true
+        },
+        "time_range": {
+          "type": "string",
+          "description": "Time range for trend analysis",
+          "optional": true,
+          "default": "4 hours"
+        }
+      },
+      "examples": [
+        {
+          "description": "Analyze CPU usage trends",
+          "call": "analyze_metric_trends(query='avg:system.cpu.user{*}', time_range='4 hours')"
+        },
+        {
+          "description": "Analyze response time trends",
+          "call": "analyze_metric_trends(query='avg:trace.response_time{service:api}', time_range='1 day')"
+        },
+        {
+          "description": "Analyze error rate trends",
+          "call": "analyze_metric_trends(query='sum:trace.errors{*}', time_range='2 hours')"
+        }
+      ]
+    },
+    {
+      "name": "get_system_metrics",
+      "handler": "mcp.metrics:get_system_metrics_mcp",
+      "description": "Get common system metrics (CPU, memory, disk, load) for monitoring",
+      "parameters": {
+        "time_range": {
+          "type": "string",
+          "description": "Time range for system metrics",
+          "optional": true,
+          "default": "1 hour"
+        },
+        "host": {
+          "type": "string",
+          "description": "Filter by specific host name",
+          "optional": true
+        }
+      },
+      "examples": [
+        {
+          "description": "Get system metrics for all hosts",
+          "call": "get_system_metrics(time_range='1 hour')"
+        },
+        {
+          "description": "Get system metrics for specific host",
+          "call": "get_system_metrics(host='web-server-01', time_range='2 hours')"
+        },
+        {
+          "description": "Get recent system performance",
+          "call": "get_system_metrics(time_range='30 minutes')"
+        }
+      ]
+    },
+    {
+      "name": "get_application_metrics",
+      "handler": "mcp.metrics:get_application_metrics_mcp",
+      "description": "Get common application metrics (requests, errors, latency, runtime)",
+      "parameters": {
+        "service": {
+          "type": "string",
+          "description": "Filter by specific service name",
+          "optional": true
+        },
+        "time_range": {
+          "type": "string",
+          "description": "Time range for application metrics",
+          "optional": true,
+          "default": "1 hour"
+        }
+      },
+      "examples": [
+        {
+          "description": "Get application metrics for all services",
+          "call": "get_application_metrics(time_range='1 hour')"
+        },
+        {
+          "description": "Get metrics for specific service",
+          "call": "get_application_metrics(service='web-api', time_range='2 hours')"
+        },
+        {
+          "description": "Get recent application performance",
+          "call": "get_application_metrics(service='payment-service', time_range='30 minutes')"
+        }
+      ]
+    }
+  ]
+} 

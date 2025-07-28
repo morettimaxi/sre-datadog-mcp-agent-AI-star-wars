@@ -1,0 +1,52 @@
+{
+  "name": "monitors",
+  "description": "Datadog monitors MCP - get and filter monitors",
+  "tools": [
+    {
+      "name": "get_monitors",
+      "handler": "mcp.monitors:get_monitors_mcp",
+      "description": "Get Datadog monitors with filtering options",
+      "parameters": {
+        "group_states": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["alert", "warn", "no data", "ignored", "skipped", "unknown", "ok"]
+          },
+          "description": "Filter by monitor states. Can specify multiple states.",
+          "optional": true
+        },
+        "priority": {
+          "type": "string", 
+          "enum": ["P1", "P2", "P3", "P4", "P5"],
+          "description": "Filter by priority level",
+          "optional": true
+        },
+        "tags": {
+          "type": "string",
+          "description": "Filter by tags (e.g., 'env:prod,team:backend')",
+          "optional": true
+        },
+        "limit": {
+          "type": "number",
+          "description": "Maximum number of monitors to return",
+          "optional": true
+        }
+      },
+      "examples": [
+        {
+          "description": "Get all P1 alerts",
+          "call": "get_monitors(group_states=['alert'], priority='P1')"
+        },
+        {
+          "description": "Get all warning monitors",
+          "call": "get_monitors(group_states=['warn'])"
+        },
+        {
+          "description": "Get first 10 monitors of any state",
+          "call": "get_monitors(limit=10)"
+        }
+      ]
+    }
+  ]
+} 

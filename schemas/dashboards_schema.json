@@ -1,0 +1,111 @@
+{
+  "name": "dashboards",
+  "description": "Datadog dashboards MCP - list, get, and analyze dashboards",
+  "tools": [
+    {
+      "name": "list_dashboards",
+      "handler": "mcp.dashboards:list_dashboards_mcp",
+      "description": "List all Datadog dashboards with optional filtering",
+      "parameters": {
+        "name": {
+          "type": "string",
+          "description": "Filter dashboards by name (partial match)",
+          "optional": true
+        },
+        "tags": {
+          "type": "string", 
+          "description": "Filter dashboards by tags",
+          "optional": true
+        }
+      },
+      "examples": [
+        {
+          "description": "List all dashboards",
+          "call": "list_dashboards()"
+        },
+        {
+          "description": "Find dashboards with 'deployment' in name",
+          "call": "list_dashboards(name='deployment')"
+        }
+      ]
+    },
+    {
+      "name": "get_dashboard",
+      "handler": "mcp.dashboards:get_dashboard_mcp",
+      "description": "Get specific dashboard configuration by ID",
+      "parameters": {
+        "dashboard_id": {
+          "type": "string",
+          "description": "Dashboard ID (format: abc-123-def)",
+          "required": true
+        }
+      },
+      "examples": [
+        {
+          "description": "Get specific dashboard",
+          "call": "get_dashboard(dashboard_id='v9u-7sf-jbn')"
+        }
+      ]
+    },
+    {
+      "name": "analyze_dashboard",
+      "handler": "mcp.dashboards:analyze_dashboard_mcp",
+      "description": "Deep analysis of dashboard including widgets, queries, and real-time data",
+      "parameters": {
+        "dashboard_id": {
+          "type": "string", 
+          "description": "Dashboard ID to analyze (format: abc-123-def)",
+          "required": true
+        },
+        "time_range": {
+          "type": "string",
+          "description": "Time range for data analysis. Options: '1 hour', '4 hours', '1 day', '3 days', '1 week', '1 month', or 'X days/hours'",
+          "optional": true,
+          "default": "1 week"
+        }
+      },
+      "examples": [
+        {
+          "description": "Analyze dashboard performance and content",
+          "call": "analyze_dashboard(dashboard_id='v9u-7sf-jbn')"
+        },
+        {
+          "description": "Analyze dashboard for last 24 hours",
+          "call": "analyze_dashboard(dashboard_id='v9u-7sf-jbn', time_range='1 day')"
+        }
+      ]
+    },
+    {
+      "name": "get_widget_data",
+      "handler": "mcp.dashboards:get_widget_data_mcp",
+      "description": "Get real-time data from dashboard widgets",
+      "parameters": {
+        "dashboard_id": {
+          "type": "string",
+          "description": "Dashboard ID to get widget data from",
+          "required": true
+        },
+        "time_range": {
+          "type": "string",
+          "description": "Time range for widget data. Options: '1 hour', '4 hours', '1 day', '3 days', '1 week', '1 month', or 'X days/hours'",
+          "optional": true,
+          "default": "1 week"
+        }
+      },
+      "examples": [
+        {
+          "description": "Get current widget data values",
+          "call": "get_widget_data(dashboard_id='v9u-7sf-jbn')"
+        },
+        {
+          "description": "Get widget data for last hour",
+          "call": "get_widget_data(dashboard_id='v9u-7sf-jbn', time_range='1 hour')"
+        },
+        {
+          "description": "Get widget data for last 3 days",
+          "call": "get_widget_data(dashboard_id='v9u-7sf-jbn', time_range='3 days')"
+        }
+      ]
+    }
+  ]
+} 

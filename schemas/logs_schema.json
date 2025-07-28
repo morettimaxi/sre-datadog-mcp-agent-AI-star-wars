@@ -1,0 +1,168 @@
+{
+  "name": "logs",
+  "description": "Datadog logs MCP - search, analyze, and filter logs",
+  "tools": [
+    {
+      "name": "search_logs",
+      "handler": "mcp.logs:search_logs_mcp",
+      "description": "Search Datadog logs with query and time filtering",
+      "parameters": {
+        "query": {
+          "type": "string",
+          "description": "Log search query using Datadog syntax (e.g., 'service:my-app status:error', 'host:web-01', '*exception*')",
+          "optional": true
+        },
+        "time_range": {
+          "type": "string",
+          "description": "Time range for search. Options: '15 minutes', '1 hour', '4 hours', '1 day', '3 days', '1 week'",
+          "optional": true,
+          "default": "1 hour"
+        },
+        "limit": {
+          "type": "number",
+          "description": "Maximum number of log entries to return (max 1000)",
+          "optional": true,
+          "default": 100
+        },
+        "sort": {
+          "type": "string",
+          "enum": ["asc", "desc"],
+          "description": "Sort order by timestamp",
+          "optional": true,
+          "default": "desc"
+        }
+      },
+      "examples": [
+        {
+          "description": "Search for error logs in last hour",
+          "call": "search_logs(query='status:error', time_range='1 hour')"
+        },
+        {
+          "description": "Search logs from specific service",
+          "call": "search_logs(query='service:my-app', time_range='4 hours', limit=50)"
+        },
+        {
+          "description": "Search for exception messages",
+          "call": "search_logs(query='*exception*', time_range='1 day')"
+        },
+        {
+          "description": "Get recent logs from specific host",
+          "call": "search_logs(query='host:web-server-01', time_range='30 minutes')"
+        }
+      ]
+    },
+    {
+      "name": "get_log_streams",
+      "handler": "mcp.logs:get_log_streams_mcp",
+      "description": "Get log streams filtered by service or source",
+      "parameters": {
+        "service": {
+          "type": "string",
+          "description": "Filter logs by service name",
+          "optional": true
+        },
+        "source": {
+          "type": "string",
+          "description": "Filter logs by source (e.g., 'python', 'nginx', 'docker', 'kubernetes')",
+          "optional": true
+        },
+        "time_range": {
+          "type": "string",
+          "description": "Time range for logs",
+          "optional": true,
+          "default": "1 hour"
+        },
+        "limit": {
+          "type": "number",
+          "description": "Maximum number of log entries to return",
+          "optional": true,
+          "default": 50
+        }
+      },
+      "examples": [
+        {
+          "description": "Get logs from specific service",
+          "call": "get_log_streams(service='web-api')"
+        },
+        {
+          "description": "Get Docker logs",
+          "call": "get_log_streams(source='docker', time_range='2 hours')"
+        },
+        {
+          "description": "Get Python application logs",
+          "call": "get_log_streams(source='python', service='backend-api', time_range='1 hour')"
+        }
+      ]
+    },
+    {
+      "name": "analyze_log_patterns",
+      "handler": "mcp.logs:analyze_log_patterns_mcp",
+      "description": "Analyze log patterns and extract insights about errors, services, and trends",
+      "parameters": {
+        "query": {
+          "type": "string",
+          "description": "Log query to analyze (leave empty for all logs)",
+          "optional": true
+        },
+        "time_range": {
+          "type": "string",
+          "description": "Time range for analysis",
+          "optional": true,
+          "default": "1 hour"
+        }
+      },
+      "examples": [
+        {
+          "description": "Analyze all logs for patterns",
+          "call": "analyze_log_patterns(time_range='4 hours')"
+        },
+        {
+          "description": "Analyze error patterns",
+          "call": "analyze_log_patterns(query='status:error OR *exception*', time_range='1 day')"
+        },
+        {
+          "description": "Analyze specific service logs",
+          "call": "analyze_log_patterns(query='service:payment-service', time_range='2 hours')"
+        }
+      ]
+    },
+    {
+      "name": "search_error_logs",
+      "handler": "mcp.logs:search_error_logs_mcp",
+      "description": "Search specifically for error, exception, and failure logs",
+      "parameters": {
+        "time_range": {
+          "type": "string",
+          "description": "Time range for error search",
+          "optional": true,
+          "default": "1 hour"
+        },
+        "limit": {
+          "type": "number",
+          "description": "Maximum number of error logs to return",
+          "optional": true,
+          "default": 100
+        },
+        "service": {
+          "type": "string",
+          "description": "Filter errors by specific service",
+          "optional": true
+        }
+      },
+      "examples": [
+        {
+          "description": "Find all recent errors",
+          "call": "search_error_logs(time_range='1 hour')"
+        },
+        {
+          "description": "Find errors in specific service",
+          "call": "search_error_logs(service='payment-api', time_range='4 hours')"
+        },
+        {
+          "description": "Get last 50 errors from past day",
+          "call": "search_error_logs(time_range='1 day', limit=50)"
+        }
+      ]
+    }
+  ]
+} 

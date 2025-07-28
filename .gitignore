@@ -1,0 +1,361 @@
+# SRYODA Galactic Command Center - .gitignore
+# Built by EVIL-CORP Engineering Division
+
+# ==============================================================================
+# 🔑 SENSITIVE FILES - NEVER COMMIT THESE!
+# ==============================================================================
+.env
+.env.local
+.env.*.local
+*.key
+secrets.json
+config.json
+credentials.json
+
+# API Keys and tokens
+*api_key*
+*secret*
+*token*
+*password*
+
+# ==============================================================================
+# 🐍 PYTHON
+# ==============================================================================
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask stuff
+instance/
+.webassets-cache
+
+# Scrapy stuff
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# PEP 582
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# ==============================================================================
+# 🖥️ IDEs & EDITORS
+# ==============================================================================
+# VSCode
+.vscode/
+*.code-workspace
+
+# PyCharm
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# ==============================================================================
+# 💻 OPERATING SYSTEMS
+# ==============================================================================
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ==============================================================================
+# 📊 SRYODA SPECIFIC FILES
+# ==============================================================================
+# Temporary monitoring data
+*.tmp
+*.temp
+temp/
+tmp/
+
+# DataDog cache
+datadog_cache/
+dd_cache/
+
+# SRYODA logs
+sryoda_*.log
+*.log
+
+# MCP tool cache
+mcp_cache/
+tool_cache/
+
+# Generated reports
+reports/
+outputs/
+exports/
+
+# Test data
+test_data/
+mock_data/
+sample_data/
+
+# ==============================================================================
+# 🌐 WEB & GRADIO
+# ==============================================================================
+# Gradio temporary files
+gradio_cached_examples/
+flagged/
+
+# Static files (if generated)
+static/
+public/
+
+# Node modules (if any frontend tooling)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ==============================================================================
+# 📦 DEPENDENCIES & BUILDS
+# ==============================================================================
+# Pip
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Conda
+.conda/
+
+# Docker
+.dockerignore
+Dockerfile.tmp
+
+# ==============================================================================
+# 🔧 BACKUP & TEMPORARY FILES
+# ==============================================================================
+# Backup files
+*.bak
+*.backup
+*.old
+*.orig
+*.save
+*.tmp
+
+# Archive files
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# ==============================================================================
+# 📝 LOGS & MONITORING
+# ==============================================================================
+# Application logs
+*.log
+logs/
+log/
+
+# Monitoring data
+monitoring/
+metrics/
+traces/
+
+# Performance data
+profile/
+profiling/
+
+# ==============================================================================
+# ⚙️ CONFIGURATION OVERRIDES
+# ==============================================================================
+# Local configuration overrides
+config.local.*
+settings.local.*
+local_settings.*
+
+# User-specific config
+user_config.*
+personal_settings.*
+
+# ==============================================================================
+# 🧪 TESTING & DEBUG
+# ==============================================================================
+# Debug files
+debug/
+debug_*
+*.debug
+
+# Test outputs
+test_outputs/
+test_reports/
+
+# Screenshots (from UI testing)
+screenshots/
+*.png.backup
+
+# ==============================================================================
+# 📚 DOCUMENTATION BUILDS
+# ==============================================================================
+# Generated docs
+docs/build/
+docs/_build/
+doc/build/
+
+# ==============================================================================
+# 🎯 KEEP THESE FILES (COMMENTED FOR CLARITY)
+# ==============================================================================
+# !sryoda.png              # SRYODA droid logo
+# !requirements_ui.txt     # Dependencies
+# !README_UI.md           # Documentation
+# !schemas/*.json         # MCP tool schemas
+# !mcp/*.py              # MCP modules
+# !*.py                  # Python source files 
