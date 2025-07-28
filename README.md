@@ -1,8 +1,36 @@
 # 🚀 SRYODA Galactic Command Center
 
+<div align="center">
+  <img src="sryoda.png" alt="SRYODA - Strategic Reliability Engineering Operations & DataDog Analytics" width="200" height="200" style="border-radius: 50%; border: 4px solid #00ffff; box-shadow: 0 0 25px #00ffff;">
+</div>
+
 ## ⭐ Strategic Reliability Engineering Operations & DataDog Analytics
 
 Welcome to the **SRYODA Galactic Command Center**! A Star Wars themed web interface built by EVIL-CORP's finest engineers that transforms your infrastructure monitoring into an epic galactic experience. This sophisticated SRE droid provides Jedi-level DataDog monitoring capabilities.
+
+<div align="center">
+  
+  ![Python](https://img.shields.io/badge/Python-3.8+-blue?style=for-the-badge&logo=python)
+  ![Gradio](https://img.shields.io/badge/Gradio-UI-orange?style=for-the-badge)
+  ![DataDog](https://img.shields.io/badge/DataDog-API-purple?style=for-the-badge)
+  ![OpenAI](https://img.shields.io/badge/OpenAI-GPT-green?style=for-the-badge)
+  ![Star Wars](https://img.shields.io/badge/May%20the-Force%20be%20with%20you-yellow?style=for-the-badge)
+
+</div>
+
+## 🖼️ Interface Screenshots
+
+### 🌌 Epic Star Wars Opening Crawl
+<div align="center">
+  <img src="intro.png" alt="SRYODA Opening Crawl - The Ops Strike Back" width="800" style="border-radius: 10px; border: 2px solid #00ffff; box-shadow: 0 0 20px rgba(0,255,255,0.3);">
+  <p><em>Experience the legendary opening crawl: "The Ops Strike Back" - where infrastructure monitoring becomes an epic galactic adventure!</em></p>
+</div>
+
+### 🚀 Main Command Center Dashboard
+<div align="center">
+  <img src="dashboard.png" alt="SRYODA Main Dashboard Interface" width="800" style="border-radius: 10px; border: 2px solid #00ffff; box-shadow: 0 0 20px rgba(0,255,255,0.3);">
+  <p><em>The futuristic SRYODA command center with holographic effects, intelligent chat interface, and comprehensive DataDog monitoring tools.</em></p>
+</div>
 
 ## 🌟 Features
 
@@ -160,7 +188,8 @@ mcp-04/
 ├── 🔗 mcp_loader.py         # Dynamic MCP tool loader
 ├── 📄 requirements_ui.txt   # Python dependencies
 ├── 🖼️ sryoda.png            # SRYODA droid logo
-├── 📚 README_UI.md          # This documentation
+├── 📚 README.md             # This documentation
+├── 🔐 .gitignore            # Git ignore rules
 ├── 📁 mcp/                  # MCP tool modules
 │   ├── monitors.py          # Monitor management tools
 │   ├── dashboards.py        # Dashboard analysis tools
@@ -432,7 +461,11 @@ This project is built for educational and internal use. Please respect:
 
 ## 🌟 May the Force be with your Infrastructure 🌟
 
-*"In a galaxy far, far away, where systems never fail and alerts are always clear, there exists a legendary SRE droid named SRYODA. This is that droid's interface."*
+<div align="center">
+  <img src="sryoda.png" alt="SRYODA Droid" width="100" height="100" style="border-radius: 50%;">
+  
+  *"In a galaxy far, far away, where systems never fail and alerts are always clear, there exists a legendary SRE droid named SRYODA. This is that droid's interface."*
+</div>
 
 ### 🚀 **Ready to Begin Your Journey?**
 ```bash
