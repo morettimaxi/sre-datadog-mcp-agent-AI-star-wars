@@ -13,7 +13,7 @@ Welcome to the **SRYODA Galactic Command Center**! A Star Wars themed web interf
   ![Python](https://img.shields.io/badge/Python-3.8+-blue?style=for-the-badge&logo=python)
   ![Gradio](https://img.shields.io/badge/Gradio-UI-orange?style=for-the-badge)
   ![DataDog](https://img.shields.io/badge/DataDog-API-purple?style=for-the-badge)
-  ![OpenAI](https://img.shields.io/badge/OpenAI-GPT-green?style=for-the-badge)
+  ![evil GenAI](https://img.shields.io/badge/evil%20GenAI-GPT-green?style=for-the-badge)
   ![Star Wars](https://img.shields.io/badge/May%20the-Force%20be%20with%20you-yellow?style=for-the-badge)
 
 </div>
@@ -53,7 +53,7 @@ Welcome to the **SRYODA Galactic Command Center**! A Star Wars themed web interf
 - 🔧 **Dynamic Tool Loading** - Modular schema-based tool registration
 
 ### 🤖 **Intelligent Interface**
-- 💬 **Conversational AI Chat** - Natural language processing with OpenAI
+- 💬 **Conversational AI Chat** - Natural language processing with evil GenAI
 - 🎯 **Smart Command Dropdown** - 20+ predefined common commands
 - 🔧 **Automatic Tool Execution** - Seamless DataDog API integration
 - 📊 **Rich Result Formatting** - Structured output with Star Wars styling
@@ -94,14 +94,14 @@ python sryoda_ui.py
 ### 🔑 **Environment Configuration**
 Create a `.env` file in the project root:
 ```env
-# OpenAI Configuration (Required for SRYODA droid intelligence)
-OPENAI_API_KEY=your_openai_api_key_here
-OPENAI_MODEL=gpt-4  # Optional, defaults to gpt-3.5-turbo
+# evil GenAI Configuration (Required for SRYODA droid intelligence)
+API_KEY=your_evil_genai_api_key_here
+GENAI_MODEL=azure.gpt-4o-mini  # Options: azure.gpt-4o-mini, azure.gpt-4o, etc.
 
 # DataDog API Configuration (Required for monitoring tools)
 DD_API_KEY=your_datadog_api_key_here
 DD_APP_KEY=your_datadog_app_key_here
-DD_SITE=api.datadoghq.com  # Change if using EU: api.datadoghq.eu
+DD_SITE=api.us3.datadoghq.com  # Change based on your DataDog instance
 
 # Optional: Customize SRYODA behavior
 SRYODA_PERSONALITY=droid  # Options: droid, jedi, empire
@@ -327,7 +327,7 @@ Add new MCP tools:
 python -m pip install --upgrade pip
 
 # Install dependencies manually
-pip install gradio requests python-dotenv openai
+pip install gradio requests python-dotenv
 
 # Check Python version
 python --version  # Must be 3.8+
@@ -338,8 +338,8 @@ python --version  # Must be 3.8+
 # Verify .env file exists and is properly formatted
 cat .env
 
-# Test OpenAI connection
-python -c "import openai; print('OpenAI module works')"
+# Test evil GenAI connection
+python test_genai_integration.py
 
 # Test DataDog connection (requires DD_API_KEY)
 python -c "import requests; print('Ready for DataDog')"
@@ -358,7 +358,7 @@ python -c "from sryoda_ui import create_sryoda_ui; create_sryoda_ui().launch(ser
 ### 🔧 **Runtime Troubleshooting**
 
 #### 🤖 **SRYODA Not Responding**
-- ✅ Verify OpenAI API key is valid
+- ✅ Verify evil GenAI API key is valid
 - ✅ Check API usage limits
 - ✅ Ensure internet connection
 - ✅ Review browser console for errors
@@ -447,7 +447,7 @@ Developed with ❤️, ☕ caffeine, and 🌟 lots of Star Wars inspiration by E
 ### 🎬 **Acknowledgments**
 - **Star Wars Universe** - For endless inspiration
 - **DataDog** - For powerful monitoring APIs
-- **OpenAI** - For making SRYODA intelligent
+- **evil GenAI** - For making SRYODA intelligent
 - **Gradio** - For the beautiful web interface framework
 - **SRE Community** - For keeping the galaxy running
 

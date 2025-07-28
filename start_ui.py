@@ -21,12 +21,13 @@ def check_env_file():
         print("⚠️ .env file not found!")
         print("Creating sample .env file...")
         with open('.env', 'w') as f:
-            f.write("# OpenAI API Configuration\n")
-            f.write("OPENAI_API_KEY=your_openai_api_key_here\n\n")
+            f.write("# evil GenAI API Configuration\n")
+            f.write("API_KEY=your_evil_genai_api_key_here\n")
+            f.write("GENAI_MODEL=azure.gpt-4o-mini\n\n")
             f.write("# DataDog API Configuration\n")
             f.write("DD_API_KEY=your_datadog_api_key_here\n")
             f.write("DD_APP_KEY=your_datadog_app_key_here\n")
-            f.write("DD_SITE=api.datadoghq.com\n")
+            f.write("DD_SITE=api.us3.datadoghq.com\n")
         print("📝 Please edit .env file with your API keys!")
         return False
     return True

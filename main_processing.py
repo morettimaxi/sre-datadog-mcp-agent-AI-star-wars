@@ -8,8 +8,9 @@ from dotenv import load_dotenv
 # Initialize
 load_dotenv()
 
-# OpenAI API
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+# evil GenAI API (compatible with OpenAI format)
+API_KEY = os.getenv('API_KEY')
+GENAI_MODEL = os.getenv('GENAI_MODEL', 'azure.gpt-4o-mini')  # Default fallback
 
 def parse_tool_call(llm_response):
     """
@@ -149,21 +150,23 @@ def parse_function_parameters(params_str):
     return params
 
 def call_openai(messages):
-    """Call OpenAI API"""
-    if not OPENAI_API_KEY:
-        return "❌ OpenAI API key not found. Please set OPENAI_API_KEY in .env file."
+    """Call evil GenAI API (OpenAI-compatible endpoint)"""
+    if not API_KEY:
+        return "❌ GenAI API key not found. Please set API_KEY in .env file."
     
-    url = "https://api.openai.com/v1/chat/completions"
+    url = "https://evil-corp/v1/chat/completions"
     headers = {
         'Content-Type': 'application/json',
-        'Authorization': f'Bearer {OPENAI_API_KEY}'
+        'Accept': 'application/json',
+        'Authorization': f'Bearer {API_KEY}'
     }
     
     data = {
-        "model": "gpt-4o-mini",
+        "model": GENAI_MODEL,
         "messages": messages,
         "max_tokens": 1500,
-        "temperature": 0.3
+        "temperature": 0.3,
+        "stream": False
     }
 
     try:
@@ -171,9 +174,9 @@ def call_openai(messages):
         if response.status_code == 200:
             return response.json()['choices'][0]['message']['content']
         else:
-            return f"❌ OpenAI API error: {response.status_code} - {response.text}"
+            return f"❌ GenAI API error: {response.status_code} - {response.text}"
     except Exception as e:
-        return f"❌ Error calling OpenAI: {str(e)}"
+        return f"❌ Error calling GenAI: {str(e)}"
 
 def format_tool_result(result):
     """Format tool result for display"""
