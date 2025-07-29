@@ -1,74 +1,85 @@
 #!/usr/bin/env python3
 
+import gradio as gr
 import os
-import sys
-import subprocess
+from dotenv import load_dotenv
+from yoda_ui import create_yoda_ui
 
-def install_requirements():
-    """Install required packages"""
-    print("🔧 Installing UI dependencies...")
-    try:
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements_ui.txt"])
-        print("✅ Dependencies installed successfully!")
-        return True
-    except subprocess.CalledProcessError:
-        print("❌ Failed to install dependencies")
-        return False
+# Load environment variables
+load_dotenv()
 
-def check_env_file():
-    """Check if .env file exists with required keys"""
-    if not os.path.exists('.env'):
-        print("⚠️ .env file not found!")
-        print("Creating sample .env file...")
-        with open('.env', 'w') as f:
-            f.write("# OpenAI API Configuration\n")
-            f.write("OPENAI_API_KEY=your_openai_api_key_here\n\n")
-            f.write("# DataDog API Configuration\n")
-            f.write("DD_API_KEY=your_datadog_api_key_here\n")
-            f.write("DD_APP_KEY=your_datadog_app_key_here\n")
-            f.write("DD_SITE=api.datadoghq.com\n")
-        print("📝 Please edit .env file with your API keys!")
-        return False
-    return True
+def warm_up_caches():
+    """
+    Optional: Warm up caches at startup for better performance
+    Set PRELOAD_CACHES=true in .env to enable
+    """
+    preload = os.getenv('PRELOAD_CACHES', 'false').lower() in ('true', '1', 'yes')
+    
+    if preload:
+        print("🔥 Warming up caches at startup...")
+        try:
+            # Pre-populate services cache
+            from mcp.logs import get_available_services_mcp
+            print("📋 Pre-loading services cache...")
+            services_result = get_available_services_mcp()
+            
+            if services_result['success']:
+                services_data = services_result['data']
+                print(f"   ✅ Found {len(services_data)} active services")
+                if services_data:
+                    # Show top 5 most active services
+                    top_services = services_data[:5]
+                    print("   🏆 Top active services:")
+                    for i, service in enumerate(top_services, 1):
+                        print(f"      {i}. {service['name']} ({service['log_count']} logs)")
+                    if len(services_data) > 5:
+                        print(f"      ... and {len(services_data) - 5} more services")
+            
+            # Pre-populate monitor tags cache  
+            from mcp.monitors import get_available_monitor_tags_mcp
+            print("🏷️ Pre-loading monitor tags cache...")
+            tags_result = get_available_monitor_tags_mcp()
+            
+            if tags_result['success']:
+                tags_data = tags_result['data']
+                print(f"   ✅ Analyzed {tags_data['total_monitors_analyzed']} monitors")
+                print(f"   🏷️ Found {tags_data['total_unique_tags']} unique tags")
+                print(f"   🌍 Environments: {tags_data['tag_summary']['environment_count']}")
+                print(f"   🔧 Services: {tags_data['tag_summary']['service_count']}")
+                print(f"   📦 Products: {tags_data['tag_summary']['product_count']}")
+                
+                # Show top environments and services
+                if tags_data['environments']:
+                    top_env = tags_data['environments'][0]
+                    print(f"   🏆 Top environment: {top_env[0]} ({top_env[1]} monitors)")
+                
+                if tags_data['services']:
+                    top_service = tags_data['services'][0]
+                    print(f"   🏆 Top service: {top_service[0]} ({top_service[1]} monitors)")
+            
+            print("✅ Cache warm-up completed! All queries will now be super fast ⚡")
+        except Exception as e:
+            print(f"⚠️ Cache warm-up failed (will work on-demand): {e}")
+    else:
+        print("💡 Tip: Set PRELOAD_CACHES=true in .env to warm up caches at startup")
 
 def main():
-    """Main startup function"""
-    print("🚀 YODA Galactic Command Center Startup")
-    print("🌟 May the Force be with your Infrastructure!")
-    print("="*50)
+    print("🤖 YODA Systems Initializing...")
     
-    # Check environment file
-    if not check_env_file():
-        print("\n⚠️ Please configure your .env file with API keys before continuing.")
-        input("Press Enter to continue anyway...")
+    # Warm up caches if enabled
+    warm_up_caches()
     
-    # Install requirements
-    if not install_requirements():
-        print("\n❌ Failed to install requirements. Please install manually:")
-        print("   pip install -r requirements_ui.txt")
-        input("Press Enter to continue anyway...")
+    # Create the Gradio interface
+    interface = create_yoda_ui()
     
-    print("\n🌌 Launching YODA UI...")
-    print("🔗 The UI will be available at: http://localhost:7860")
-    print("✨ Opening your Star Wars command center...")
-    
-    # Import and launch the UI
-    try:
-        from yoda_ui import create_yoda_ui
-        ui = create_yoda_ui()
-        ui.launch(
-            server_name="0.0.0.0",
-            server_port=None,  # Let Gradio find an available port
-            share=False,
-            show_error=True,
-            debug=False,
-            inbrowser=True  # Automatically open browser
-        )
-    except ImportError as e:
-        print(f"❌ Import error: {e}")
-        print("Make sure all files are in the same directory")
-    except Exception as e:
-        print(f"❌ Error launching UI: {e}")
+    # Launch the interface
+    print("🚀 Launching YODA Interface...")
+    interface.launch(
+        server_name="0.0.0.0",
+        server_port=7860,
+        share=False,
+        inbrowser=True
+    )
 
 if __name__ == "__main__":
     main() 
