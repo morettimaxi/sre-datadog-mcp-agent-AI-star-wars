@@ -48,7 +48,7 @@ def create_yoda_ui():
                     show_label=False,
                     container=True,
                     elem_classes=["chat-container"],
-                    type="tuples"
+                    type='messages'
                 )
                 
                 # Command input section
