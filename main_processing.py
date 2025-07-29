@@ -131,8 +131,20 @@ def parse_function_parameters(params_str):
         param_parts.append(current_part.strip())
     
     # Parse each parameter
+    positional_count = 0
     for part in param_parts:
         if '=' not in part:
+            # Handle positional parameters
+            # For get_monitors_by_tag, first positional param is 'tag_filter'
+            if positional_count == 0:
+                # Clean quotes from positional parameter
+                value = part.strip()
+                if value.startswith('"') and value.endswith('"'):
+                    value = value[1:-1]
+                elif value.startswith("'") and value.endswith("'"):
+                    value = value[1:-1]
+                params['tag_filter'] = value
+                positional_count += 1
             continue
             
         key, value = part.split('=', 1)
@@ -214,12 +226,42 @@ def call_openai(messages):
     except Exception as e:
         return f"❌ Error calling OpenAI: {str(e)}"
 
+def format_service_validation_result(result):
+    """Format find_similar_service results for display"""
+    if result.get('exact_match'):
+        service = result['service']
+        return f"✅ Service '{service['name']}' found!\n" \
+               f"   📊 Activity: {service['log_count']} logs ({service['activity_level']} activity)\n" \
+               f"   🖥️ Hosts: {service['host_count']} hosts\n" \
+               f"   🏭 Environments: {', '.join(service['environments']) if service['environments'] else 'N/A'}"
+    else:
+        user_input = result['user_input']
+        suggestions = result['suggestions']
+        if suggestions:
+            formatted = f"❌ Service '{user_input}' not found. Did you mean:\n"
+            for i, suggestion in enumerate(suggestions[:5], 1):
+                formatted += f"   {i}. {suggestion['name']} ({suggestion['log_count']} logs)\n"
+            return formatted
+        else:
+            return f"❌ Service '{user_input}' not found and no similar services available."
+
 def format_tool_result(result):
     """Format tool result for display"""
     if not result['success']:
         return f"❌ Tool Error: {result['error']}"
     
-    data = result['data']
+    # Handle different result formats
+    if 'data' in result:
+        data = result['data']
+    elif 'service' in result:
+        # Handle find_similar_service format
+        return format_service_validation_result(result)
+    elif 'monitors' in result:
+        # Handle direct monitors format (legacy)
+        data = result['monitors']
+    else:
+        # Fallback for unknown formats
+        return f"✅ Operation completed successfully. Result: {str(result)[:200]}..."
     
     # Format based on result type
     if isinstance(data, list):
