@@ -203,7 +203,37 @@ def get_monitors_mcp(group_states=None, priority=None, names=None, tags=None, mo
         tags (list): List of tags to filter by
         monitor_tags (list): List of monitor tags to filter by
     """
-    return get_monitors(group_states=group_states, priority=priority, names=names, tags=tags, monitor_tags=monitor_tags)
+    result = get_monitors(group_states=group_states, priority=priority, names=names, tags=tags, monitor_tags=monitor_tags)
+    
+    # Transform to standard MCP format
+    if isinstance(result, dict) and 'monitors' in result:
+        monitors = result['monitors']
+        return {
+            "success": True,
+            "error": None,
+            "data": monitors,
+            "filters": {
+                "group_states": group_states,
+                "priority": priority,
+                "names": names,
+                "tags": tags,
+                "monitor_tags": monitor_tags
+            },
+            "total_monitors": len(monitors),
+            "summary": result.get('summary', {})
+        }
+    elif isinstance(result, dict) and 'error' in result:
+        return {
+            "success": False,
+            "error": result['error'],
+            "data": []
+        }
+    else:
+        return {
+            "success": False,
+            "error": "Unexpected response format from monitors API",
+            "data": []
+        }
 
 def get_monitors_by_tag_mcp(tag_filter, group_states=None, priority=None, **kwargs):
     """
