@@ -19,7 +19,21 @@ SSL_VERIFY = os.getenv('SSL_VERIFY', 'true').lower() in ('true', '1', 'yes', 'on
 LLM_API_URL = os.getenv('LLM_API_URL', 'https://api.openai.com/v1/chat/completions')
 
 # CONVERSATION HISTORY LIMIT CONFIGURATION
-CONVERSATION_LIMIT = int(os.getenv('CONVERSATION_LIMIT', '5'))
+def _validate_conversation_limit():
+    """Validate and return conversation limit with fallback to default"""
+    try:
+        limit = int(os.getenv('CONVERSATION_LIMIT', '5'))
+        # Ensure limit is between 1 and 50
+        if 1 <= limit <= 50:
+            return limit
+        else:
+            print(f"⚠️  Invalid CONVERSATION_LIMIT={limit}. Using default: 5")
+            return 5
+    except (ValueError, TypeError):
+        print(f"⚠️  Invalid CONVERSATION_LIMIT='{os.getenv('CONVERSATION_LIMIT')}'. Using default: 5")
+        return 5
+
+CONVERSATION_LIMIT = _validate_conversation_limit()
 
 def get_ssl_verify():
     """
