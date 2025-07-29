@@ -172,10 +172,7 @@ def get_monitors(group_states=None, priority=None, names=None, tags=None, monito
                     print(f"   Priority: {monitor['priority']}")
                 print()
             
-            return {
-                "success": True,
-                "data": filtered_monitors
-            }
+            return result
             
         else:
             error_msg = f"API Error {response.status_code}: {response.text}"
