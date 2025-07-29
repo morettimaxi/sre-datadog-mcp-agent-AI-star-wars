@@ -383,6 +383,6 @@ def get_common_commands():
 def get_initial_messages():
     """Get initial welcome messages for the chatbot"""
     return [
-        [None, "🤖 **YODA DROID ONLINE** - *Systems initialized, Commander. The Empire's monitoring apparatus is at your command. How may this humble droid serve the cause today?*"],
-        [None, "⚡ **TRANSMISSION**: *Young Padawan, try commanding me with: 'show recent alerts', 'analyze CPU metrics', or 'search for disturbances in the logs'. The Force flows through our monitoring systems.*"]
+        {"role": "assistant", "content": "🤖 **YODA DROID ONLINE** - *Systems initialized, Commander. The Empire's monitoring apparatus is at your command. How may this humble droid serve the cause today?*"},
+        {"role": "assistant", "content": "⚡ **TRANSMISSION**: *Young Padawan, try commanding me with: 'show recent alerts', 'analyze CPU metrics', or 'search for disturbances in the logs'. The Force flows through our monitoring systems.*"}
     ] 

@@ -8,8 +8,8 @@ def process_yoda_message(message, history):
     if not message.strip():
         return history, ""
     
-    # Add user message to history
-    history.append([message, None])
+    # Add user message to history (messages format)
+    history.append({"role": "user", "content": message})
     
     # Check for debug commands
     message_lower = message.lower().strip()
@@ -44,7 +44,7 @@ Available MCP Tools in the Imperial Arsenal:
 
 *May the Force guide your monitoring operations!*"""
             
-            history[-1][1] = debug_response
+            history.append({"role": "assistant", "content": debug_response})
             return history, ""
             
         except Exception as e:
@@ -108,15 +108,24 @@ Remember: You are not just a droid - you are the Empire's most trusted SRE guard
         # Prepare messages for OpenAI
         messages = [{"role": "system", "content": system_message}]
         
-        # Add conversation history
-        for user_msg, assistant_msg in history[:-1]:  # Exclude the current message
-            if user_msg:
-                messages.append({"role": "user", "content": user_msg})
-            if assistant_msg:
-                messages.append({"role": "assistant", "content": assistant_msg})
+        # Add conversation history (excluding current message)
+        for msg in history[:-1]:
+            if isinstance(msg, dict) and "role" in msg and "content" in msg:
+                messages.append(msg)
+            elif isinstance(msg, list) and len(msg) >= 2:
+                # Handle legacy tuple format if still present
+                user_msg, assistant_msg = msg[0], msg[1]
+                if user_msg:
+                    messages.append({"role": "user", "content": user_msg})
+                if assistant_msg:
+                    messages.append({"role": "assistant", "content": assistant_msg})
         
         # Add current message
-        messages.append({"role": "user", "content": message})
+        current_msg = history[-1]
+        if isinstance(current_msg, dict) and current_msg.get("role") == "user":
+            messages.append(current_msg)
+        else:
+            messages.append({"role": "user", "content": message})
         
         # Get LLM response
         llm_response = call_openai(messages)
@@ -200,8 +209,8 @@ Data Count: {len(tool_result.get('data', [])) if isinstance(tool_result.get('dat
             print(f"   ℹ️ No tool call detected - responding with droid personality")
             final_response = f"🤖 **YODA DROID TRANSMISSION**: {llm_response}\n\n*Roger roger, Commander. YODA standing by for further orders.*"
         
-        # Update history
-        history[-1][1] = final_response
+        # Add assistant response to history
+        history.append({"role": "assistant", "content": final_response})
         
     except Exception as e:
         print(f"💥 ERROR DEBUG:")
@@ -212,7 +221,7 @@ Data Count: {len(tool_result.get('data', [])) if isinstance(tool_result.get('dat
         traceback.print_exc()
         
         error_response = f"💥 **CRITICAL MALFUNCTION DETECTED**: {str(e)}\n\n🔧 *YODA systems compromised, young Padawan. Initiating emergency repair protocols... The dark side clouds everything!*"
-        history[-1][1] = error_response
+        history.append({"role": "assistant", "content": error_response})
     
     return history, ""
 
@@ -233,4 +242,5 @@ def execute_command(dropdown_value, text_value, history):
 
 def clear_history():
     """Clear the conversation history"""
-    return [], "", "" 
+    from ui_components import get_initial_messages
+    return get_initial_messages(), "", "" 
