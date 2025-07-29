@@ -362,3 +362,6 @@ doc/build/
 
 # Sensitive service cache - DO NOT UPLOAD
 services_cache.json
+
+# Example files with sensitive data - DO NOT UPLOAD  
+example.py
