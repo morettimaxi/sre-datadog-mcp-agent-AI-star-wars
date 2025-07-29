@@ -1,12 +1,15 @@
 import requests
 import os
+import sys
 import time
 import json
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from colorama import Fore
-import urllib3
-urllib3.disable_warnings()
+
+# Add parent directory to path for imports
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from mcp_loader import get_requests_verify
 
 # Load environment variables
 load_dotenv()
@@ -119,7 +122,7 @@ def search_events_mcp(query="", time_range="1 day", priority=None, sources=None,
         if tags:
             params['tags'] = ','.join(tags)
         
-        response = requests.get(url, headers=headers, params=params, verify=False)
+        response = requests.get(url, headers=headers, params=params, verify=get_requests_verify())
         
         if response.status_code == 200:
             data = response.json()

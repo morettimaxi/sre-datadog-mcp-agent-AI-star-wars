@@ -1,12 +1,15 @@
 import requests
 import os
+import sys
 import time
 import json
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from colorama import Fore
-import urllib3
-urllib3.disable_warnings()
+
+# Add parent directory to path for imports
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from mcp_loader import get_requests_verify
 
 # Load environment variables
 load_dotenv()
@@ -117,7 +120,7 @@ def query_metrics_mcp(query, time_range="1 hour", **kwargs):
         
         print(f"📋 API Params: {params}")
         
-        response = requests.get(url, headers=headers, params=params, timeout=30)
+        response = requests.get(url, headers=headers, params=params, timeout=30, verify=get_requests_verify())
         
         if response.status_code == 200:
             data = response.json()
@@ -214,7 +217,7 @@ def search_metrics_mcp(metric_name="", **kwargs):
         else:
             params['q'] = "metrics:*"
         
-        response = requests.get(url, headers=headers, params=params, verify=False)
+        response = requests.get(url, headers=headers, params=params, verify=get_requests_verify())
         
         if response.status_code == 200:
             data = response.json()
@@ -284,7 +287,7 @@ def get_metric_metadata_mcp(metric_name, **kwargs):
             'Accept': 'application/json'
         }
         
-        response = requests.get(url, headers=headers, verify=False)
+        response = requests.get(url, headers=headers, verify=get_requests_verify())
         
         if response.status_code == 200:
             data = response.json()

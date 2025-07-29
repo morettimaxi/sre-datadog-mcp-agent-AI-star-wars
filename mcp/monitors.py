@@ -1,9 +1,12 @@
 import requests
 import os
+import sys
 from dotenv import load_dotenv
 from colorama import Fore
-import urllib3
-urllib3.disable_warnings()
+
+# Add parent directory to path for imports
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from mcp_loader import get_requests_verify
 
 # Load environment variables
 load_dotenv()
@@ -73,7 +76,7 @@ def get_monitors(group_states=None, priority=None, names=None, tags=None, monito
         if params:
             print(f"📋 API Params: {params}")
         
-        response = requests.get(url, headers=headers, params=params, timeout=30)
+        response = requests.get(url, headers=headers, params=params, timeout=30, verify=get_requests_verify())
         
         if response.status_code == 200:
             monitors = response.json()

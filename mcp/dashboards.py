@@ -1,13 +1,16 @@
 import requests
 import os
+import sys
 import time
 import json
 import re
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from colorama import Fore
-import urllib3
-urllib3.disable_warnings()
+
+# Add parent directory to path for imports
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from mcp_loader import get_requests_verify
 
 # Load environment variables
 load_dotenv()
@@ -110,7 +113,7 @@ def list_dashboards_mcp(name=None, tags=None, **kwargs):
         
         print(f"🔄 MCP: Calling Datadog Dashboards API with {filter_info}")
         print(f"🌐 API URL: {url}")
-        response = requests.get(url, headers=headers, verify=False)
+        response = requests.get(url, headers=headers, verify=get_requests_verify())
         
         if response.status_code == 200:
             data = response.json()
@@ -211,7 +214,7 @@ def get_dashboard_mcp(dashboard_id, **kwargs):
         }
         
         print(f"🔄 MCP: Getting dashboard {dashboard_id} from Datadog API...")
-        response = requests.get(url, headers=headers, verify=False)
+        response = requests.get(url, headers=headers, verify=get_requests_verify())
         
         if response.status_code == 200:
             dashboard = response.json()
@@ -346,7 +349,7 @@ def get_widget_data_mcp(dashboard_id, time_range="1 week", **kwargs):
                                 }
                                 
                                 try:
-                                    response = requests.get(query_url, headers=headers, params=query_params, verify=False)
+                                    response = requests.get(query_url, headers=headers, params=query_params, verify=get_requests_verify())
                                     print(f"📈 Response: {response.status_code}")
                                     
                                     if response.status_code == 200:
@@ -428,7 +431,7 @@ def get_widget_data_mcp(dashboard_id, time_range="1 week", **kwargs):
                             }
                             
                             try:
-                                response = requests.get(query_url, headers=headers, params=query_params, verify=False)
+                                response = requests.get(query_url, headers=headers, params=query_params, verify=get_requests_verify())
                                 if response.status_code == 200:
                                     query_data = response.json()
                                     series = query_data.get('series', [])

@@ -1,8 +1,59 @@
 #!/usr/bin/env python3
 
+import os
 import json
 import importlib
+import urllib3
+import requests
+from colorama import Fore, Style, init
 from pathlib import Path
+from dotenv import load_dotenv
+
+# Load environment variables first
+load_dotenv()
+
+# SSL CONFIGURATION BASED ON ENVIRONMENT VARIABLE
+SSL_VERIFY = os.getenv('SSL_VERIFY', 'true').lower() in ('true', '1', 'yes', 'on')
+
+def get_ssl_verify():
+    """
+    Get SSL verification setting from environment variable
+    
+    Returns:
+        bool: True to verify SSL certificates, False to skip verification
+        
+    Environment Variable:
+        SSL_VERIFY: 'true'/'false', '1'/'0', 'yes'/'no', 'on'/'off'
+        Default: 'true' (secure by default)
+    """
+    return SSL_VERIFY
+
+def configure_ssl_warnings():
+    """Configure SSL warnings based on SSL_VERIFY setting"""
+    if not SSL_VERIFY:
+        # Only disable warnings if SSL verification is disabled
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+        if hasattr(requests.packages, 'urllib3'):
+            requests.packages.urllib3.disable_warnings()
+        print(f"🔒 SSL verification: DISABLED (SSL_VERIFY={os.getenv('SSL_VERIFY', 'true')})")
+    else:
+        print(f"🔒 SSL verification: ENABLED (SSL_VERIFY={os.getenv('SSL_VERIFY', 'true')})")
+
+# Initialize SSL configuration
+configure_ssl_warnings()
+
+# Initialize colorama
+init(autoreset=True)
+
+# Export SSL configuration for other modules
+def get_requests_verify():
+    """
+    Get the verify parameter for requests calls
+    
+    Returns:
+        bool: SSL verification setting for requests.get/post calls
+    """
+    return SSL_VERIFY
 
 class MCPLoader:
     """

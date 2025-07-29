@@ -365,3 +365,7 @@ services_cache.json
 
 # Example files with sensitive data - DO NOT UPLOAD  
 example.py
+test_ssl.py
+
+# Documentation files
+ENV_CONFIG.md

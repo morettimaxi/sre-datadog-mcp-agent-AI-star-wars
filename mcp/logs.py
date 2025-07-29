@@ -1,12 +1,15 @@
 import requests
 import os
+import sys
 import time
 import json
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from colorama import Fore
-import urllib3
-urllib3.disable_warnings()
+
+# Add parent directory to path for imports
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from mcp_loader import get_requests_verify
 
 # Load environment variables
 load_dotenv()
@@ -131,7 +134,7 @@ def search_logs_mcp(query="", time_range="1 hour", limit=100, sort="desc", **kwa
         
         print(f"📋 API Payload: {payload}")
         
-        response = requests.post(url, headers=headers, json=payload, verify=False)
+        response = requests.post(url, headers=headers, json=payload, verify=get_requests_verify())
         
         if response.status_code == 200:
             data = response.json()
@@ -447,7 +450,7 @@ def get_available_services_mcp(time_range="1 day", limit=50, force_refresh=False
             "sort": "timestamp:desc"
         }
         
-        response = requests.post(url, headers=headers, json=payload, verify=False)
+        response = requests.post(url, headers=headers, json=payload, verify=get_requests_verify())
         
         if response.status_code == 200:
             data = response.json()

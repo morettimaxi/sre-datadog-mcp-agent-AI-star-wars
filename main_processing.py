@@ -3,7 +3,12 @@
 import re
 import requests
 import os
+import sys
 from dotenv import load_dotenv
+
+# Add current directory to path for imports
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from mcp_loader import get_requests_verify
 
 # Initialize
 load_dotenv()
@@ -201,7 +206,7 @@ def call_openai(messages):
     }
 
     try:
-        response = requests.post(url, headers=headers, json=data, verify=False)
+        response = requests.post(url, headers=headers, json=data, verify=get_requests_verify())
         if response.status_code == 200:
             return response.json()['choices'][0]['message']['content']
         else:
