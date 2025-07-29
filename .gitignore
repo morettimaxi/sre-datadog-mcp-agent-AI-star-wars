@@ -360,8 +360,9 @@ doc/build/
 # !mcp/*.py              # MCP modules
 # !*.py                  # Python source files services_cache.json
 
-# Sensitive service cache - DO NOT UPLOAD
+# Sensitive cache files - DO NOT UPLOAD (contain real service names and monitor tags)
 services_cache.json
+monitor_tags_cache.json
 
 # Example files with sensitive data - DO NOT UPLOAD  
 example.py

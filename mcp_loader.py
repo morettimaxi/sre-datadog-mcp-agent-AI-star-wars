@@ -15,6 +15,9 @@ load_dotenv()
 # SSL CONFIGURATION BASED ON ENVIRONMENT VARIABLE
 SSL_VERIFY = os.getenv('SSL_VERIFY', 'true').lower() in ('true', '1', 'yes', 'on')
 
+# LLM API CONFIGURATION BASED ON ENVIRONMENT VARIABLE
+LLM_API_URL = os.getenv('LLM_API_URL', 'https://api.openai.com/v1/chat/completions')
+
 def get_ssl_verify():
     """
     Get SSL verification setting from environment variable
@@ -38,6 +41,13 @@ def configure_ssl_warnings():
         print(f"🔒 SSL verification: DISABLED (SSL_VERIFY={os.getenv('SSL_VERIFY', 'true')})")
     else:
         print(f"🔒 SSL verification: ENABLED (SSL_VERIFY={os.getenv('SSL_VERIFY', 'true')})")
+    
+    # Show LLM API configuration
+    llm_env_value = os.getenv('LLM_API_URL')
+    if llm_env_value:
+        print(f"🤖 LLM API: CUSTOM ({LLM_API_URL})")
+    else:
+        print(f"🤖 LLM API: DEFAULT (https://api.openai.com/v1/chat/completions)")
 
 # Initialize SSL configuration
 configure_ssl_warnings()
@@ -54,6 +64,19 @@ def get_requests_verify():
         bool: SSL verification setting for requests.get/post calls
     """
     return SSL_VERIFY
+
+def get_llm_api_url():
+    """
+    Get the LLM API URL from environment variable
+    
+    Returns:
+        str: LLM API URL for chat completions
+        
+    Environment Variable:
+        LLM_API_URL: Custom LLM API endpoint URL
+        Default: 'https://api.openai.com/v1/chat/completions'
+    """
+    return LLM_API_URL
 
 class MCPLoader:
     """

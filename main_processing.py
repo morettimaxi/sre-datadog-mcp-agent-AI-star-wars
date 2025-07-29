@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 # Add current directory to path for imports
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from mcp_loader import get_requests_verify
+from mcp_loader import get_requests_verify, get_llm_api_url
 
 # Initialize
 load_dotenv()
@@ -192,7 +192,7 @@ def call_openai(messages):
     if not OPENAI_API_KEY:
         return "❌ OpenAI API key not found. Please set OPENAI_API_KEY in .env file."
     
-    url = "https://api.openai.com/v1/chat/completions"
+    url = get_llm_api_url()
     headers = {
         'Content-Type': 'application/json',
         'Authorization': f'Bearer {OPENAI_API_KEY}'

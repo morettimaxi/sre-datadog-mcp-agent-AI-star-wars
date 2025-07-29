@@ -206,4 +206,274 @@ def get_monitors_mcp(group_states=None, priority=None, names=None, tags=None, mo
         tags (list): List of tags to filter by
         monitor_tags (list): List of monitor tags to filter by
     """
-    return get_monitors(group_states=group_states, priority=priority, names=names, tags=tags, monitor_tags=monitor_tags) 
+    return get_monitors(group_states=group_states, priority=priority, names=names, tags=tags, monitor_tags=monitor_tags)
+
+def get_monitors_by_tag_mcp(tag_filter, group_states=None, priority=None, **kwargs):
+    """
+    MCP Function to get monitors filtered by a specific tag
+    
+    Args:
+        tag_filter (str): Tag to filter by (e.g., "env:production", "service:web")
+        group_states (list): List of states to filter by (e.g., ['alert', 'warn'])
+        priority (str): Priority to filter by (e.g., 'P1', 'P2', etc.)
+    
+    Examples:
+        get_monitors_by_tag_mcp("env:production")
+        get_monitors_by_tag_mcp("service:web", group_states=["alert"])
+        get_monitors_by_tag_mcp("product:apm", priority="P1")
+    """
+    print(f"🏷️ MCP: Getting monitors for tag '{tag_filter}'")
+    
+    result = get_monitors(group_states=group_states, priority=priority, tags=[tag_filter])
+    
+    if isinstance(result, dict) and 'monitors' in result:
+        monitors = result['monitors']
+        print(f"📊 MCP Result: Found {len(monitors)} monitors with tag '{tag_filter}'")
+        
+        return {
+            "success": True,
+            "error": None,
+            "data": monitors,
+            "filters": {
+                "tag": tag_filter,
+                "group_states": group_states,
+                "priority": priority
+            },
+            "total_monitors": len(monitors),
+            "summary": result.get('summary', {})
+        }
+    elif isinstance(result, dict) and 'error' in result:
+        return {
+            "success": False,
+            "error": result['error'],
+            "data": []
+        }
+    else:
+        return {
+            "success": False,
+            "error": "Unexpected response format from monitors API",
+            "data": []
+        }
+
+def get_monitors_by_environment_mcp(environment, group_states=None, priority=None, **kwargs):
+    """
+    MCP Function to get monitors for a specific environment
+    
+    Args:
+        environment (str): Environment name (e.g., "production", "staging", "development")
+        group_states (list): List of states to filter by (e.g., ['alert', 'warn'])
+        priority (str): Priority to filter by (e.g., 'P1', 'P2', etc.)
+    
+    Examples:
+        get_monitors_by_environment_mcp("production")
+        get_monitors_by_environment_mcp("staging", group_states=["alert"])
+    """
+    tag_filter = f"env:{environment}"
+    print(f"🌍 MCP: Getting monitors for environment '{environment}' (tag: {tag_filter})")
+    
+    return get_monitors_by_tag_mcp(tag_filter, group_states=group_states, priority=priority, **kwargs)
+
+def get_monitors_by_service_mcp(service, group_states=None, priority=None, **kwargs):
+    """
+    MCP Function to get monitors for a specific service
+    
+    Args:
+        service (str): Service name (e.g., "web-backend", "api", "database")
+        group_states (list): List of states to filter by (e.g., ['alert', 'warn'])
+        priority (str): Priority to filter by (e.g., 'P1', 'P2', etc.)
+    
+    Examples:
+        get_monitors_by_service_mcp("web-backend")
+        get_monitors_by_service_mcp("api", group_states=["alert", "warn"])
+    """
+    tag_filter = f"service:{service}"
+    print(f"🔧 MCP: Getting monitors for service '{service}' (tag: {tag_filter})")
+    
+    return get_monitors_by_tag_mcp(tag_filter, group_states=group_states, priority=priority, **kwargs)
+
+def get_monitors_by_multiple_tags_mcp(tags, group_states=None, priority=None, **kwargs):
+    """
+    MCP Function to get monitors filtered by multiple tags (AND logic)
+    
+    Args:
+        tags (list): List of tags to filter by (e.g., ["env:production", "service:web-backend"])
+        group_states (list): List of states to filter by (e.g., ['alert', 'warn'])
+        priority (str): Priority to filter by (e.g., 'P1', 'P2', etc.)
+    
+    Examples:
+        get_monitors_by_multiple_tags_mcp(["env:production", "service:web-backend"])
+        get_monitors_by_multiple_tags_mcp(["product:apm", "check_status:live"], group_states=["alert"])
+    """
+    print(f"🏷️ MCP: Getting monitors for tags {tags}")
+    
+    result = get_monitors(group_states=group_states, priority=priority, tags=tags)
+    
+    if isinstance(result, dict) and 'monitors' in result:
+        monitors = result['monitors']
+        print(f"📊 MCP Result: Found {len(monitors)} monitors with tags {tags}")
+        
+        return {
+            "success": True,
+            "error": None,
+            "data": monitors,
+            "filters": {
+                "tags": tags,
+                "group_states": group_states,
+                "priority": priority
+            },
+            "total_monitors": len(monitors),
+            "summary": result.get('summary', {})
+        }
+    elif isinstance(result, dict) and 'error' in result:
+        return {
+            "success": False,
+            "error": result['error'],
+            "data": []
+        }
+    else:
+        return {
+            "success": False,
+            "error": "Unexpected response format from monitors API",
+            "data": []
+        } 
+
+def get_available_monitor_tags_mcp(force_refresh=False, **kwargs):
+    """
+    MCP Function to get all available tags from monitors with intelligent caching
+    
+    Args:
+        force_refresh (bool): Force refresh cache even if valid
+    """
+    import json
+    import os
+    from datetime import datetime
+    import time
+    
+    # Cache configuration
+    CACHE_FILE = 'monitor_tags_cache.json'
+    CACHE_DURATION_HOURS = 4  # Cache expires after 4 hours
+    
+    print(f"🏷️ MCP: Discovering available monitor tags...")
+    
+    # Check cache first (unless force refresh)
+    if not force_refresh and os.path.exists(CACHE_FILE):
+        try:
+            with open(CACHE_FILE, 'r') as f:
+                cache_data = json.load(f)
+            
+            cache_age_hours = (datetime.now() - datetime.fromtimestamp(cache_data['timestamp'])).total_seconds() / 3600
+            
+            # Check if cache is fresh
+            if 'timestamp' in cache_data and cache_age_hours < CACHE_DURATION_HOURS:
+                print(f"✅ Using cached monitor tags from {datetime.fromtimestamp(cache_data['timestamp']).strftime('%Y-%m-%d %H:%M:%S')} (age: {cache_age_hours:.1f}h)")
+                
+                return {
+                    "success": True,
+                    "error": None,
+                    "data": cache_data['tags_data'],
+                    "cache_info": {
+                        "cache_age_hours": round(cache_age_hours, 1),
+                        "cache_file": CACHE_FILE,
+                        "discovery_method": "cache"
+                    }
+                }
+            else:
+                print(f"⚠️ Cache expired ({cache_age_hours:.1f}h old, max {CACHE_DURATION_HOURS}h). Refreshing from API.")
+        except Exception as e:
+            print(f"⚠️ Error loading cache: {e}. Refreshing from API.")
+    elif force_refresh:
+        print(f"🔄 Force refresh requested. Fetching fresh data from API.")
+    
+    # Get all monitors (no filtering) - this is the expensive call
+    print(f"📊 Fetching ALL monitors from Datadog API...")
+    result = get_monitors()
+    
+    if isinstance(result, dict) and 'monitors' in result:
+        monitors = result['monitors']
+        print(f"📊 Analyzing {len(monitors)} monitors for tag discovery")
+        
+        # Extract and count tags
+        tag_counts = {}
+        environment_tags = {}
+        service_tags = {}
+        product_tags = {}
+        other_tags = {}
+        
+        for monitor in monitors:
+            tags = monitor.get('tags', [])
+            for tag in tags:
+                # Count all tags
+                tag_counts[tag] = tag_counts.get(tag, 0) + 1
+                
+                # Categorize tags
+                if tag.startswith('env:'):
+                    env_name = tag.replace('env:', '')
+                    environment_tags[env_name] = environment_tags.get(env_name, 0) + 1
+                elif tag.startswith('service:'):
+                    service_name = tag.replace('service:', '')
+                    service_tags[service_name] = service_tags.get(service_name, 0) + 1
+                elif tag.startswith('product:'):
+                    product_name = tag.replace('product:', '')
+                    product_tags[product_name] = product_tags.get(product_name, 0) + 1
+                else:
+                    other_tags[tag] = other_tags.get(tag, 0) + 1
+        
+        # Sort by frequency
+        sorted_tags = sorted(tag_counts.items(), key=lambda x: x[1], reverse=True)
+        sorted_environments = sorted(environment_tags.items(), key=lambda x: x[1], reverse=True)
+        sorted_services = sorted(service_tags.items(), key=lambda x: x[1], reverse=True)
+        sorted_products = sorted(product_tags.items(), key=lambda x: x[1], reverse=True)
+        sorted_others = sorted(other_tags.items(), key=lambda x: x[1], reverse=True)
+        
+        print(f"🔍 Found {len(tag_counts)} unique tags:")
+        print(f"   🌍 {len(environment_tags)} environments")
+        print(f"   🔧 {len(service_tags)} services")
+        print(f"   📦 {len(product_tags)} products")
+        print(f"   🏷️ {len(other_tags)} other tags")
+        
+        # Prepare data for caching and response
+        tags_data = {
+            "total_monitors_analyzed": len(monitors),
+            "total_unique_tags": len(tag_counts),
+            "all_tags": sorted_tags,
+            "environments": sorted_environments,
+            "services": sorted_services, 
+            "products": sorted_products,
+            "other_tags": sorted_others,
+            "tag_summary": {
+                "most_common_tag": sorted_tags[0] if sorted_tags else None,
+                "environment_count": len(environment_tags),
+                "service_count": len(service_tags),
+                "product_count": len(product_tags)
+            }
+        }
+        
+        # Save to cache
+        cache_data = {
+            'timestamp': int(time.time()),
+            'tags_data': tags_data,
+            'total_monitors': len(monitors)
+        }
+        try:
+            with open(CACHE_FILE, 'w') as f:
+                json.dump(cache_data, f, indent=4)
+            print(f"✅ Monitor tags cached to {CACHE_FILE}")
+        except Exception as e:
+            print(f"⚠️ Error saving cache: {e}")
+        
+        return {
+            "success": True,
+            "error": None,
+            "data": tags_data,
+            "cache_info": {
+                "cache_file": CACHE_FILE,
+                "discovery_method": "fresh_api_call",
+                "cached_at": datetime.now().isoformat()
+            }
+        }
+    else:
+        return {
+            "success": False,
+            "error": "Failed to fetch monitors for tag discovery",
+            "data": []
+        } 

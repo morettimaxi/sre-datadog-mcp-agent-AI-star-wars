@@ -47,6 +47,183 @@
           "call": "get_monitors(limit=10)"
         }
       ]
-    }
+    },
+    {
+      "name": "get_monitors_by_tag",
+      "handler": "mcp.monitors:get_monitors_by_tag_mcp",
+      "description": "Get monitors filtered by a specific tag",
+      "parameters": {
+        "tag_filter": {
+          "type": "string",
+          "description": "Tag to filter by (e.g., 'env:production', 'service:web-backend')",
+          "required": true
+        },
+        "group_states": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["alert", "warn", "no data", "ignored", "skipped", "unknown", "ok"]
+          },
+          "description": "Filter by monitor states",
+          "optional": true
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["P1", "P2", "P3", "P4", "P5"],
+          "description": "Filter by priority level",
+          "optional": true
+        }
+      },
+      "examples": [
+        {
+          "description": "Get all monitors for production environment",
+          "call": "get_monitors_by_tag('env:production')"
+        },
+        {
+          "description": "Get alert monitors for web-backend service",
+          "call": "get_monitors_by_tag('service:web-backend', group_states=['alert'])"
+        },
+        {
+          "description": "Get P1 monitors for APM product",
+          "call": "get_monitors_by_tag('product:apm', priority='P1')"
+        }
+      ]
+    },
+    {
+      "name": "get_monitors_by_environment",
+      "handler": "mcp.monitors:get_monitors_by_environment_mcp",
+      "description": "Get monitors for a specific environment",
+      "parameters": {
+        "environment": {
+          "type": "string",
+          "description": "Environment name (e.g., 'production', 'staging', 'development')",
+          "required": true
+        },
+        "group_states": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["alert", "warn", "no data", "ignored", "skipped", "unknown", "ok"]
+          },
+          "description": "Filter by monitor states",
+          "optional": true
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["P1", "P2", "P3", "P4", "P5"],
+          "description": "Filter by priority level",
+          "optional": true
+        }
+      },
+      "examples": [
+        {
+          "description": "Get all production monitors",
+          "call": "get_monitors_by_environment('production')"
+        },
+        {
+          "description": "Get staging alerts",
+          "call": "get_monitors_by_environment('staging', group_states=['alert'])"
+        }
+      ]
+    },
+    {
+      "name": "get_monitors_by_service",
+      "handler": "mcp.monitors:get_monitors_by_service_mcp",
+      "description": "Get monitors for a specific service",
+      "parameters": {
+        "service": {
+          "type": "string",
+          "description": "Service name (e.g., 'web-backend', 'api', 'database')",
+          "required": true
+        },
+        "group_states": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["alert", "warn", "no data", "ignored", "skipped", "unknown", "ok"]
+          },
+          "description": "Filter by monitor states",
+          "optional": true
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["P1", "P2", "P3", "P4", "P5"],
+          "description": "Filter by priority level",
+          "optional": true
+        }
+      },
+      "examples": [
+        {
+          "description": "Get all web-backend monitors",
+          "call": "get_monitors_by_service('web-backend')"
+        },
+        {
+          "description": "Get API service alerts",
+          "call": "get_monitors_by_service('api', group_states=['alert', 'warn'])"
+        }
+      ]
+    },
+    {
+      "name": "get_monitors_by_multiple_tags",
+      "handler": "mcp.monitors:get_monitors_by_multiple_tags_mcp",
+      "description": "Get monitors filtered by multiple tags (AND logic)",
+      "parameters": {
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of tags to filter by (e.g., ['env:production', 'service:web-backend'])",
+          "required": true
+        },
+        "group_states": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["alert", "warn", "no data", "ignored", "skipped", "unknown", "ok"]
+          },
+          "description": "Filter by monitor states",
+          "optional": true
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["P1", "P2", "P3", "P4", "P5"],
+          "description": "Filter by priority level",
+          "optional": true
+        }
+      },
+      "examples": [
+        {
+          "description": "Get monitors for production web-backend",
+          "call": "get_monitors_by_multiple_tags(['env:production', 'service:web-backend'])"
+        },
+        {
+          "description": "Get APM alerts in production",
+          "call": "get_monitors_by_multiple_tags(['product:apm', 'env:production'], group_states=['alert'])"
+                 }
+       ]
+     },
+     {
+             "name": "get_available_monitor_tags",
+      "handler": "mcp.monitors:get_available_monitor_tags_mcp",
+      "description": "Get all available tags from monitors for discovery purposes (with intelligent caching)",
+      "parameters": {
+        "force_refresh": {
+          "type": "boolean",
+          "description": "Force refresh cache even if valid (default: false)",
+          "optional": true
+        }
+      },
+      "examples": [
+        {
+          "description": "Discover all available monitor tags (use cache if available)",
+          "call": "get_available_monitor_tags()"
+        },
+        {
+          "description": "Force refresh monitor tags from API",
+          "call": "get_available_monitor_tags(force_refresh=true)"
+        }
+      ]
+     }
   ]
 } 
