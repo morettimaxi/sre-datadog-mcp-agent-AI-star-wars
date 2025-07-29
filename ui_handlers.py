@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from mcp_loader import get_mcp_tools_description, call_mcp_tool
+from mcp_loader import get_mcp_tools_description, call_mcp_tool, get_conversation_limit
 from main_processing import parse_tool_call, call_openai, format_tool_result
 
 def process_yoda_message(message, history):
@@ -108,8 +108,17 @@ Remember: You are not just a droid - you are the Empire's most trusted SRE guard
         # Prepare messages for OpenAI
         messages = [{"role": "system", "content": system_message}]
         
-        # Add conversation history (excluding current message)
-        for msg in history[:-1]:
+        # LIMIT CONVERSATIONS TO AVOID TOKEN ISSUES (configurable via .env)
+        conversation_limit = get_conversation_limit() * 2  # conversations = user + assistant messages
+        recent_history = history[:-1]  # Exclude current message
+        
+        # Take only the most recent messages within the limit
+        if len(recent_history) > conversation_limit:
+            recent_history = recent_history[-conversation_limit:]
+            print(f"🔄 CONTEXT LIMIT: Using last {conversation_limit//2} conversations ({len(recent_history)} messages)")
+        
+        # Add limited conversation history
+        for msg in recent_history:
             if isinstance(msg, dict) and "role" in msg and "content" in msg:
                 messages.append(msg)
             elif isinstance(msg, list) and len(msg) >= 2:

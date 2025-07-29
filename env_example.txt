@@ -1,0 +1,81 @@
+# ============================================
+# 🤖 YODA Configuration Template
+# ============================================
+# Copy this file to '.env' and fill in your values
+# cp env_example.txt .env
+
+# ============================================
+# 🔑 API KEYS (REQUIRED)
+# ============================================
+
+# Datadog API Configuration
+# Get these from: https://app.datadoghq.com/organization-settings/api-keys
+DATADOG_API_KEY=your_datadog_api_key_here
+DATADOG_APP_KEY=your_datadog_app_key_here
+
+# Datadog Site (choose your region)
+# Options: datadoghq.com, datadoghq.eu, us3.datadoghq.com, us5.datadoghq.com, ap1.datadoghq.com, ddog-gov.com
+DATADOG_SITE=datadoghq.com
+
+# OpenAI API Configuration
+# Get from: https://platform.openai.com/api-keys
+OPENAI_API_KEY=your_openai_api_key_here
+
+# ============================================
+# 🌐 LLM CONFIGURATION
+# ============================================
+
+# Custom LLM API URL (optional)
+# Default: https://api.openai.com/v1/chat/completions
+# For custom endpoints, local models, or other providers
+# LLM_API_URL=http://localhost:1234/v1/chat/completions
+# LLM_API_URL=https://api.anthropic.com/v1/messages
+LLM_API_URL=https://api.openai.com/v1/chat/completions
+
+# Conversation History Limit
+# Number of recent conversations to keep in context (1-50)
+# Default: 5 (5 user + 5 assistant = 10 messages total)
+# Higher values = more context but more tokens used
+# Lower values = less context but better performance
+CONVERSATION_LIMIT=5
+
+# ============================================
+# 🔒 SECURITY CONFIGURATION
+# ============================================
+
+# SSL Certificate Verification
+# Default: true (recommended for production)
+# Set to false only for development/testing with self-signed certificates
+SSL_VERIFY=true
+
+# ============================================
+# 🚀 PERFORMANCE CONFIGURATION
+# ============================================
+
+# Cache Preloading at Startup
+# Default: false (caches load on-demand)
+# Set to true to pre-populate caches at application startup
+# Improves first-use performance but increases startup time
+PRELOAD_CACHES=false
+
+# ============================================
+# 💡 USAGE EXAMPLES
+# ============================================
+
+# Development with local LLM:
+# LLM_API_URL=http://localhost:1234/v1/chat/completions
+# SSL_VERIFY=false
+# CONVERSATION_LIMIT=3
+# PRELOAD_CACHES=true
+
+# Production settings:
+# LLM_API_URL=https://api.openai.com/v1/chat/completions
+# SSL_VERIFY=true
+# CONVERSATION_LIMIT=5
+# PRELOAD_CACHES=false
+
+# High-context conversations:
+# CONVERSATION_LIMIT=20
+
+# Token-optimized (minimal context):
+# CONVERSATION_LIMIT=2 

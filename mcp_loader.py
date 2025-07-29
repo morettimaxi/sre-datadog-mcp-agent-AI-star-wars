@@ -18,6 +18,9 @@ SSL_VERIFY = os.getenv('SSL_VERIFY', 'true').lower() in ('true', '1', 'yes', 'on
 # LLM API CONFIGURATION BASED ON ENVIRONMENT VARIABLE
 LLM_API_URL = os.getenv('LLM_API_URL', 'https://api.openai.com/v1/chat/completions')
 
+# CONVERSATION HISTORY LIMIT CONFIGURATION
+CONVERSATION_LIMIT = int(os.getenv('CONVERSATION_LIMIT', '5'))
+
 def get_ssl_verify():
     """
     Get SSL verification setting from environment variable
@@ -48,6 +51,13 @@ def configure_ssl_warnings():
         print(f"🤖 LLM API: CUSTOM ({LLM_API_URL})")
     else:
         print(f"🤖 LLM API: DEFAULT (https://api.openai.com/v1/chat/completions)")
+    
+    # Show conversation limit configuration
+    conv_env_value = os.getenv('CONVERSATION_LIMIT')
+    if conv_env_value:
+        print(f"💭 Conversation History: {CONVERSATION_LIMIT} conversations ({CONVERSATION_LIMIT * 2} messages)")
+    else:
+        print(f"💭 Conversation History: DEFAULT (5 conversations, 10 messages)")
 
 # Initialize SSL configuration
 configure_ssl_warnings()
@@ -77,6 +87,19 @@ def get_llm_api_url():
         Default: 'https://api.openai.com/v1/chat/completions'
     """
     return LLM_API_URL
+
+def get_conversation_limit():
+    """
+    Get conversation history limit from environment variable
+    
+    Returns:
+        int: Number of conversations to keep in context
+        
+    Environment Variable:
+        CONVERSATION_LIMIT: Number of recent conversations to maintain (1-50)
+        Default: 5 (5 user + 5 assistant = 10 messages)
+    """
+    return CONVERSATION_LIMIT
 
 class MCPLoader:
     """
