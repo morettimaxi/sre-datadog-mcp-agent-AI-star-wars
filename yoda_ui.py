@@ -44,7 +44,7 @@ def create_yoda_ui():
                 chatbot = gr.Chatbot(
                     [],
                     elem_id="chatbot",
-                    height=500,
+                    height=700,
                     show_label=False,
                     container=True,
                     elem_classes=["chat-container"],
@@ -54,22 +54,29 @@ def create_yoda_ui():
                 # Command input section
                 common_commands = get_common_commands()
                 
+                # Main input row
                 with gr.Row():
-                    with gr.Column(scale=4):
-                        command_dropdown = gr.Dropdown(
-                            choices=[""] + common_commands,
-                            value="",
-                            label="🎯 Quick Commands",
-                            info="Select a common command or type your own below",
-                            elem_classes=["input-container"]
-                        )
-                        msg = gr.Textbox(
-                            show_label=False,
-                            placeholder="Enter your SRE command, young Padawan... or select from dropdown above",
-                            container=True,
-                            elem_classes=["input-container"]
-                        )
+                    msg = gr.Textbox(
+                        show_label=False,
+                        placeholder="Enter your SRE command, young Padawan...",
+                        container=True,
+                        elem_classes=["input-container"],
+                        scale=5
+                    )
                     send_btn = gr.Button("🚀 Execute", scale=1, variant="primary")
+                
+                # Quick commands row (smaller, below)
+                with gr.Row():
+                    command_dropdown = gr.Dropdown(
+                        choices=[""] + common_commands,
+                        value="",
+                        label="💡 Quick Commands",
+                        info="Select a preset command",
+                        elem_classes=["quick-commands"],
+                        scale=1,
+                        min_width=200,
+                        container=False
+                    )
                 
                 with gr.Row():
                     clear_btn = gr.Button("🗑️ Clear Console", variant="secondary")

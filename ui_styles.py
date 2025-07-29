@@ -244,6 +244,18 @@ star_wars_css = """
     box-shadow: 0 0 10px rgba(0,255,65,0.5);
 }
 
+/* Quick commands styling - smaller and compact */
+.quick-commands {
+    background: rgba(0,20,40,0.6) !important;
+    border: 1px solid #004d40 !important;
+    border-radius: 5px !important;
+    padding: 5px !important;
+    margin: 5px 0 !important;
+    box-shadow: 0 0 5px rgba(0,255,65,0.3) !important;
+    font-size: 12px !important;
+    max-width: 300px !important;
+}
+
 input[type="text"] {
     background: rgba(0,0,0,0.7) !important;
     border: 1px solid #00ff41 !important;
@@ -268,9 +280,21 @@ input[type="text"]:focus {
     color: #00ff41 !important;
     font-family: 'Orbitron', monospace !important;
     font-size: 14px !important;
-    padding: 12px !important;
-    border-radius: 5px !important;
-    box-shadow: inset 0 0 10px rgba(0,255,65,0.2) !important;
+}
+
+/* Quick commands dropdown - smaller styling */
+.quick-commands .dropdown select {
+    font-size: 11px !important;
+    padding: 4px 8px !important;
+    max-height: 30px !important;
+    background: rgba(0,0,0,0.5) !important;
+    border: 1px solid #004d40 !important;
+}
+
+.quick-commands label {
+    font-size: 11px !important;
+    color: #66bb6a !important;
+    margin-bottom: 2px !important;
 }
 
 .dropdown select:focus {
