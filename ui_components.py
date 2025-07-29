@@ -124,7 +124,7 @@ def create_simple_intro():
                 
                 <p style="color: #FFE81F;">The <strong style="text-transform: uppercase; font-weight: normal; color: #FFE81F;">Infrastructure Empire</strong> has struck back! Critical systems are down across the galaxy.</p>
                 
-                <p style="color: #FFE81F;">Young SRE agent <strong style="text-transform: uppercase; font-weight: normal; color: #FFE81F;">SRYODA</strong> must restore the monitoring systems and bring peace to the EVIL-CORP infrastructure...</p>
+                <p style="color: #FFE81F;">Young SRE agent <strong style="text-transform: uppercase; font-weight: normal; color: #FFE81F;">YODA</strong> must restore the monitoring systems and bring peace to the EVIL-CORP infrastructure...</p>
             </section>
         </article>
     </div>
@@ -185,13 +185,13 @@ def create_simple_intro():
     """
 
 def create_header():
-    """Create the Star Wars themed header with SRYODA logo"""
-    # Get the SRYODA image as base64
-    sryoda_image = get_image_as_base64("sryoda.png")
+    """Create the Star Wars themed header with YODA logo"""
+    # Get the YODA image as base64
+    yoda_image = get_image_as_base64("yoda.png")
     
     # Create the image HTML only if the image exists - MUCH BIGGER
-    if sryoda_image:
-        image_html = f'<img src="{sryoda_image}" alt="SRYODA" style="width: 150px; height: 150px; border-radius: 50%; border: 4px solid #00ffff; box-shadow: 0 0 25px #00ffff, 0 0 50px rgba(0,255,255,0.5);">'
+    if yoda_image:
+        image_html = f'<img src="{yoda_image}" alt="YODA" style="width: 150px; height: 150px; border-radius: 50%; border: 4px solid #00ffff; box-shadow: 0 0 25px #00ffff, 0 0 50px rgba(0,255,255,0.5);">'
     else:
         image_html = '<div style="width: 150px; height: 150px; border-radius: 50%; border: 4px solid #00ffff; background: linear-gradient(45deg, #00ffff, #0088cc); display: flex; align-items: center; justify-content: center; color: #000; font-weight: bold; font-size: 24px;">SR</div>'
     
@@ -200,7 +200,7 @@ def create_header():
         <div style="display: flex; align-items: center; justify-content: center; gap: 15px;">
             {image_html}
             <div>
-                <h1>SRYODA - Master SRE of the Galaxy</h1>
+                <h1>YODA - Master SRE of the Galaxy</h1>
                 <h2>⭐ Jedi-Level Infrastructure Monitoring & DataDog Mastery ⭐</h2>
             </div>
         </div>
@@ -338,7 +338,7 @@ def create_examples_sidebar():
         <div style="padding: 10px; background: rgba(0,255,255,0.1); border-radius: 8px; margin-top: 15px;">
             <p style="color: #00ffff; font-size: 10px; margin: 0; text-align: center;">
                 <strong>💡 Pro Tip:</strong><br>
-                Use natural language - SRYODA understands your intent!<br>
+                Use natural language - YODA understands your intent!<br>
                 <em>"Debug the API issues"</em> works just as well as<br>
                 <em>"Search error logs for API service"</em>
             </p>
@@ -350,7 +350,7 @@ def create_footer():
     """Create the footer component"""
     return """
     <div style="text-align: center; padding: 20px; color: #666; font-size: 12px;">
-        <p>🌟 SRYODA v4.0 - Powered by the Force & DataDog APIs 🌟</p>
+        <p>🌟 YODA v4.0 - Powered by the Force & DataDog APIs 🌟</p>
         <p style="color: #00ffff;">Remember: With great monitoring power comes great reliability responsibility</p>
     </div>
     """
@@ -383,6 +383,6 @@ def get_common_commands():
 def get_initial_messages():
     """Get initial welcome messages for the chatbot"""
     return [
-        [None, "🤖 **SRYODA DROID ONLINE** - *Systems initialized, Commander. The Empire's monitoring apparatus is at your command. How may this humble droid serve the cause today?*"],
+        [None, "🤖 **YODA DROID ONLINE** - *Systems initialized, Commander. The Empire's monitoring apparatus is at your command. How may this humble droid serve the cause today?*"],
         [None, "⚡ **TRANSMISSION**: *Young Padawan, try commanding me with: 'show recent alerts', 'analyze CPU metrics', or 'search for disturbances in the logs'. The Force flows through our monitoring systems.*"]
     ] 

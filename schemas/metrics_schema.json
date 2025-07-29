@@ -189,6 +189,76 @@
           "call": "get_application_metrics(service='payment-service', time_range='30 minutes')"
         }
       ]
+    },
+    {
+      "name": "get_kubernetes_metrics",
+      "handler": "mcp.metrics:get_kubernetes_metrics_mcp",
+      "description": "Get Kubernetes metrics (CPU, memory, pods, containers) for deployments and services",
+      "parameters": {
+        "service": {
+          "type": "string",
+          "description": "Kubernetes deployment/service name (e.g., 'front-prod', 'api-service', 'backend')",
+          "optional": true
+        },
+        "time_range": {
+          "type": "string",
+          "description": "Time range for Kubernetes metrics",
+          "optional": true,
+          "default": "1 hour"
+        }
+      },
+      "examples": [
+        {
+          "description": "Get Kubernetes metrics for all deployments",
+          "call": "get_kubernetes_metrics(time_range='1 hour')"
+        },
+        {
+          "description": "Get metrics for specific deployment",
+          "call": "get_kubernetes_metrics(service='front-prod', time_range='2 hours')"
+        },
+        {
+          "description": "Get recent Kubernetes performance",
+          "call": "get_kubernetes_metrics(service='api-service', time_range='30 minutes')"
+        }
+      ]
+    },
+    {
+      "name": "get_apm_metrics",
+      "handler": "mcp.metrics:get_apm_metrics_mcp",
+      "description": "Get real APM/trace metrics that actually exist in the environment (hits, duration, apdex)",
+      "parameters": {
+        "service": {
+          "type": "string",
+          "description": "Filter by service name (searches in metric names)",
+          "optional": true
+        },
+        "time_range": {
+          "type": "string",
+          "description": "Time range for APM metrics",
+          "optional": true,
+          "default": "1 hour"
+        },
+        "metric_types": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Types of metrics to fetch: ['hits', 'duration', 'apdex']",
+          "optional": true
+        }
+      },
+      "examples": [
+        {
+          "description": "Get all APM metrics",
+          "call": "get_apm_metrics(time_range='1 hour')"
+        },
+        {
+          "description": "Get APM metrics for specific service",
+          "call": "get_apm_metrics(service='api', time_range='2 hours')"
+        },
+        {
+          "description": "Get only request count metrics",
+          "call": "get_apm_metrics(metric_types=['hits'], time_range='1 hour')"
+        }
+      ]
     }
   ]
 } 

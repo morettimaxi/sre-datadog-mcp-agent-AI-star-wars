@@ -13,23 +13,57 @@ OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
 def parse_tool_call(llm_response):
     """
-    Parse LLM response for tool calls in format:
-    TOOL_CALL: tool_name(param1='value', param2=['list'])
+    Parse LLM response for tool calls in multiple formats:
+    1. TOOL_CALL: tool_name(param1='value', param2=['list'])
+    2. YODA-themed: `tool_name(param1='value')`
+    3. Function calls in backticks: `tool_name(params)`
     """
+    
+    # First try the exact TOOL_CALL format
     pattern = r'TOOL_CALL:\s*(\w+)\((.*?)\)(?:\s|$)'
     match = re.search(pattern, llm_response, re.DOTALL)
     
-    if not match:
-        return None, None
+    if match:
+        tool_name = match.group(1)
+        params_str = match.group(2)
+        print(f"🔍 Tool Parse Result: tool='{tool_name}', params_raw='{params_str[:100]}'")
+    else:
+        # Try flexible patterns for YODA-themed responses
+        # Look for function calls in backticks or after colons
+        patterns = [
+            r'`(\w+)\((.*?)\)`',  # `function_name(params)`
+            r':\s*`(\w+)\((.*?)\)`',  # : `function_name(params)`
+            r'(\w+)\((.*?)\)(?:\s|$)',  # Just function_name(params) anywhere
+        ]
+        
+        for pattern in patterns:
+            match = re.search(pattern, llm_response, re.DOTALL)
+            if match:
+                potential_tool = match.group(1)
+                params_str = match.group(2)
+                
+                # Check if this looks like a valid MCP tool name
+                # Valid MCP tools typically end with _mcp or contain words like get, search, list, analyze
+                if (potential_tool.endswith('_mcp') or 
+                    any(word in potential_tool.lower() for word in ['get', 'search', 'list', 'analyze', 'query', 'fetch', 'find'])):
+                    tool_name = potential_tool
+                    print(f"🔍 Tool Parse Result: tool='{tool_name}', params_raw='{params_str[:100]}'")
+                    break
+                else:
+                    # Keep looking with other patterns
+                    continue
+        else:
+            # No tool call found
+            print(f"🔍 Tool Parse Result: tool='None', params=None")
+            print(f"   ℹ️ No tool call detected - responding with droid personality")
+            return None, None
     
-    tool_name = match.group(1)
-    params_str = match.group(2)
-    
-    # Improved parameter parsing
+    # Parse parameters
     params = {}
     if params_str.strip():
         try:
             params = parse_function_parameters(params_str)
+            print(f"   📋 Parsed params: {params}")
         except Exception as e:
             print(f"❌ Error parsing parameters: {params_str}")
             print(f"❌ Parse error: {str(e)}")

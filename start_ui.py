@@ -33,7 +33,7 @@ def check_env_file():
 
 def main():
     """Main startup function"""
-    print("🚀 SRYODA Galactic Command Center Startup")
+    print("🚀 YODA Galactic Command Center Startup")
     print("🌟 May the Force be with your Infrastructure!")
     print("="*50)
     
@@ -48,14 +48,14 @@ def main():
         print("   pip install -r requirements_ui.txt")
         input("Press Enter to continue anyway...")
     
-    print("\n🌌 Launching SRYODA UI...")
+    print("\n🌌 Launching YODA UI...")
     print("🔗 The UI will be available at: http://localhost:7860")
     print("✨ Opening your Star Wars command center...")
     
     # Import and launch the UI
     try:
-        from sryoda_ui import create_sryoda_ui
-        ui = create_sryoda_ui()
+        from yoda_ui import create_yoda_ui
+        ui = create_yoda_ui()
         ui.launch(
             server_name="0.0.0.0",
             server_port=None,  # Let Gradio find an available port

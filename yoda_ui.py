@@ -3,7 +3,7 @@
 import gradio as gr
 from dotenv import load_dotenv
 
-# Import our modular SRYODA components
+# Import our modular YODA components
 from ui_styles import get_combined_css
 from ui_components import (
     create_simple_intro, create_header, create_sidebar, 
@@ -11,7 +11,7 @@ from ui_components import (
     get_initial_messages
 )
 from ui_handlers import (
-    process_sryoda_message, on_dropdown_change, 
+    process_yoda_message, on_dropdown_change, 
     execute_command, clear_history
 )
 
@@ -19,12 +19,12 @@ from ui_handlers import (
 load_dotenv()
 
 
-def create_sryoda_ui():
-    """Create the main SRYODA UI with modular components"""
+def create_yoda_ui():
+    """Create the main YODA UI with modular components"""
     
     with gr.Blocks(
         css=get_combined_css(), 
-        title="SRYODA - Master SRE of the Galaxy",
+        title="YODA - Master SRE of the Galaxy",
         head="""
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta name="theme-color" content="#00ffff">
@@ -98,9 +98,9 @@ def create_sryoda_ui():
 
 if __name__ == "__main__":
     # Create and launch the interface
-    ui = create_sryoda_ui()
+    ui = create_yoda_ui()
     
-    print("🚀 Launching SRYODA Galactic Command Center...")
+    print("🚀 Launching YODA Galactic Command Center...")
     print("🌟 May the Force be with your Infrastructure!")
     
     ui.launch(

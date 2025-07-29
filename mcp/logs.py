@@ -14,6 +14,10 @@ DD_API_KEY = os.getenv('DD_API_KEY')
 DD_APP_KEY = os.getenv('DD_APP_KEY')
 DD_SITE = os.getenv('DD_SITE', 'api.datadoghq.com')
 
+# Cache configuration
+CACHE_FILE = 'services_cache.json'
+CACHE_DURATION_HOURS = 4  # Cache expires after 4 hours
+
 def parse_time_range(time_range_str="1 hour"):
     """
     Parse time range string and return seconds ago from now.
@@ -100,6 +104,8 @@ def search_logs_mcp(query="", time_range="1 hour", limit=100, sort="desc", **kwa
         
         # DATADOG LOGS API CALL
         url = f"https://{DD_SITE}/api/v2/logs/events/search"
+        print(f"🌐 API URL: {url}")
+        
         headers = {
             'DD-API-KEY': DD_API_KEY,
             'DD-APPLICATION-KEY': DD_APP_KEY,
@@ -123,11 +129,15 @@ def search_logs_mcp(query="", time_range="1 hour", limit=100, sort="desc", **kwa
         if query.strip():
             payload["filter"]["query"] = query
         
+        print(f"📋 API Payload: {payload}")
+        
         response = requests.post(url, headers=headers, json=payload, verify=False)
         
         if response.status_code == 200:
             data = response.json()
             logs = data.get('data', [])
+            print(f"📥 API Response: {response.status_code} - {len(logs)} logs received")
+            print(f"🔍 Raw response keys: {list(data.keys())}")
             
             # Format log entries for easier reading
             formatted_logs = []
@@ -354,3 +364,289 @@ def search_error_logs_mcp(time_range="1 hour", limit=100, service=None, **kwargs
         error_query = f"({error_query}) AND service:{service}"
     
     return search_logs_mcp(query=error_query, time_range=time_range, limit=limit, **kwargs) 
+
+def get_available_services_mcp(time_range="1 day", limit=50, force_refresh=False, **kwargs):
+    """
+    MCP Function to discover available services with recent activity (with intelligent caching)
+    
+    Args:
+        time_range (str): Time range to look for active services
+        limit (int): Maximum number of services to return
+        force_refresh (bool): Force refresh cache even if valid
+    """
+    
+    # VERIFY KEYS
+    if not all([DD_API_KEY, DD_APP_KEY]):
+        return {
+            "success": False,
+            "error": "Missing DD_API_KEY or DD_APP_KEY",
+            "data": []
+        }
+    
+    try:
+        print(f"🔍 MCP: Discovering available services with activity in {time_range}")
+        
+        # Check cache first (unless force refresh)
+        if not force_refresh and os.path.exists(CACHE_FILE):
+            try:
+                with open(CACHE_FILE, 'r') as f:
+                    cache_data = json.load(f)
+                
+                cache_age_hours = (datetime.now() - datetime.fromtimestamp(cache_data['timestamp'])).total_seconds() / 3600
+                
+                # Check if cache is fresh
+                if 'timestamp' in cache_data and cache_age_hours < CACHE_DURATION_HOURS:
+                    print(f"✅ Using cached services from {datetime.fromtimestamp(cache_data['timestamp']).strftime('%Y-%m-%d %H:%M:%S')} (age: {cache_age_hours:.1f}h)")
+                    
+                    # Apply limit to cached data
+                    limited_services = cache_data['services'][:limit]
+                    
+                    return {
+                        "success": True,
+                        "error": None,
+                        "data": limited_services,
+                        "discovery_info": {
+                            "total_services_found": len(cache_data['services']),
+                            "returned_services": len(limited_services),
+                            "time_range": time_range,
+                            "logs_analyzed": cache_data.get('total_logs', 0),
+                            "discovery_method": "cache",
+                            "cache_age_hours": round(cache_age_hours, 1)
+                        }
+                    }
+                else:
+                    print(f"⚠️ Cache expired ({cache_age_hours:.1f}h old, max {CACHE_DURATION_HOURS}h). Refreshing from API.")
+            except Exception as e:
+                print(f"⚠️ Error loading cache: {e}. Refreshing from API.")
+        elif force_refresh:
+            print(f"🔄 Force refresh requested. Fetching fresh data from API.")
+        
+        # Parse time range
+        time_range_seconds = parse_time_range(time_range)
+        now = int(time.time())
+        time_ago = now - time_range_seconds
+        
+        # Get services from logs (most comprehensive)
+        url = f"https://{DD_SITE}/api/v2/logs/events/search"
+        headers = {
+            'DD-API-KEY': DD_API_KEY,
+            'DD-APPLICATION-KEY': DD_APP_KEY,
+            'Content-Type': 'application/json'
+        }
+        
+        # Query to get logs and extract services
+        payload = {
+            "filter": {
+                "from": time_ago * 1000,  # Convert to milliseconds
+                "to": now * 1000,
+                "query": "*"  # Get all logs
+            },
+            "page": {
+                "limit": 1000  # Get many logs to find services
+            },
+            "sort": "timestamp:desc"
+        }
+        
+        response = requests.post(url, headers=headers, json=payload, verify=False)
+        
+        if response.status_code == 200:
+            data = response.json()
+            logs = data.get('data', [])
+            print(f"📥 API Response: {response.status_code} - {len(logs)} logs received for service discovery")
+            
+            # Extract services from logs
+            services_count = {}
+            services_info = {}
+            
+            for log in logs:
+                # Get service from log attributes
+                service = None
+                attributes = log.get('attributes', {})
+                
+                # Try different ways to get service name
+                if 'service' in attributes:
+                    service = attributes['service']
+                elif 'tags' in attributes:
+                    # Look for service tag
+                    for tag in attributes['tags']:
+                        if tag.startswith('service:'):
+                            service = tag.replace('service:', '')
+                            break
+                
+                if service and service.strip():
+                    service = service.strip()
+                    services_count[service] = services_count.get(service, 0) + 1
+                    
+                    # Store additional info about the service
+                    if service not in services_info:
+                        services_info[service] = {
+                            'name': service,
+                            'log_count': 0,
+                            'hosts': set(),
+                            'last_seen': None,
+                            'environments': set()
+                        }
+                    
+                    services_info[service]['log_count'] += 1
+                    
+                    # Add host info
+                    host = attributes.get('host', '')
+                    if host:
+                        services_info[service]['hosts'].add(host)
+                    
+                    # Add environment info
+                    env = attributes.get('env', '')
+                    if env:
+                        services_info[service]['environments'].add(env)
+                    
+                    # Update last seen
+                    timestamp = log.get('timestamp')
+                    if timestamp and (not services_info[service]['last_seen'] or timestamp > services_info[service]['last_seen']):
+                        services_info[service]['last_seen'] = timestamp
+            
+            # Convert sets to lists for JSON serialization and sort by activity
+            sorted_services = sorted(services_count.items(), key=lambda x: x[1], reverse=True)[:limit]
+            
+            service_list = []
+            for service_name, count in sorted_services:
+                info = services_info[service_name]
+                service_data = {
+                    'name': service_name,
+                    'log_count': count,
+                    'host_count': len(info['hosts']),
+                    'hosts': list(info['hosts'])[:5],  # Limit hosts shown
+                    'environments': list(info['environments']),
+                    'last_seen': info['last_seen'],
+                    'activity_level': 'high' if count > 1000 else 'medium' if count > 100 else 'low'
+                }
+                service_list.append(service_data)
+            
+            # Save to cache
+            cache_data = {
+                'timestamp': int(time.time()),
+                'services': service_list,
+                'total_logs': len(logs)
+            }
+            try:
+                with open(CACHE_FILE, 'w') as f:
+                    json.dump(cache_data, f, indent=4)
+                print(f"✅ Services cached to {CACHE_FILE}")
+            except Exception as e:
+                print(f"⚠️ Error saving cache: {e}")
+
+            return {
+                "success": True,
+                "error": None,
+                "data": service_list,
+                "discovery_info": {
+                    "total_services_found": len(services_count),
+                    "returned_services": len(service_list),
+                    "time_range": time_range,
+                    "logs_analyzed": len(logs),
+                    "discovery_method": "logs_analysis"
+                }
+            }
+            
+        else:
+            return {
+                "success": False,
+                "error": f"Datadog Logs API error: {response.status_code} - {response.text}",
+                "data": []
+            }
+            
+    except Exception as e:
+        return {
+            "success": False,
+            "error": f"Exception during service discovery: {str(e)}",
+            "data": []
+        } 
+
+def find_similar_service_mcp(user_input, threshold=0.6, **kwargs):
+    """
+    MCP Function to find similar service names using fuzzy matching
+    
+    Args:
+        user_input (str): Service name provided by user (possibly with typos)
+        threshold (float): Similarity threshold (0.0 to 1.0)
+    """
+    
+    try:
+        # Get available services from cache first
+        services_result = get_available_services_mcp(**kwargs)
+        
+        if not services_result['success']:
+            return {
+                "success": False,
+                "error": "Could not get available services for matching",
+                "data": []
+            }
+        
+        available_services = services_result['data']
+        service_names = [s['name'] for s in available_services]
+        
+        user_input_lower = user_input.lower().strip()
+        
+        # Exact match first
+        for service in available_services:
+            if service['name'].lower() == user_input_lower:
+                return {
+                    "success": True,
+                    "error": None,
+                    "exact_match": True,
+                    "service": service,
+                    "user_input": user_input,
+                    "suggestions": []
+                }
+        
+        # Fuzzy matching using simple similarity
+        def similarity(s1, s2):
+            """Simple similarity function"""
+            s1, s2 = s1.lower(), s2.lower()
+            
+            # Direct substring match
+            if s1 in s2 or s2 in s1:
+                return 0.8
+            
+            # Character overlap ratio
+            s1_chars = set(s1)
+            s2_chars = set(s2)
+            common = len(s1_chars & s2_chars)
+            total = len(s1_chars | s2_chars)
+            
+            if total == 0:
+                return 0.0
+            
+            return common / total
+        
+        # Find similar services
+        similarities = []
+        for service in available_services:
+            service_name = service['name']
+            sim_score = similarity(user_input_lower, service_name)
+            
+            if sim_score >= threshold:
+                similarities.append({
+                    'service': service,
+                    'similarity': sim_score,
+                    'name': service_name
+                })
+        
+        # Sort by similarity
+        similarities.sort(key=lambda x: x['similarity'], reverse=True)
+        
+        return {
+            "success": True,
+            "error": None,
+            "exact_match": False,
+            "user_input": user_input,
+            "suggestions": similarities[:5],  # Top 5 suggestions
+            "available_services": service_names,
+            "similarity_threshold": threshold
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "error": f"Error in similarity matching: {str(e)}",
+            "data": []
+        } 

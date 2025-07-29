@@ -1,4 +1,4 @@
-# SRYODA Galactic Command Center - .gitignore
+# YODA Galactic Command Center - .gitignore
 # Built by EVIL-CORP Engineering Division
 
 # ==============================================================================
@@ -219,7 +219,7 @@ Temporary Items
 .nfs*
 
 # ==============================================================================
-# 📊 SRYODA SPECIFIC FILES
+# 📊 YODA SPECIFIC FILES
 # ==============================================================================
 # Temporary monitoring data
 *.tmp
@@ -231,8 +231,8 @@ tmp/
 datadog_cache/
 dd_cache/
 
-# SRYODA logs
-sryoda_*.log
+# YODA logs
+yoda_*.log
 *.log
 
 # MCP tool cache
@@ -353,9 +353,9 @@ doc/build/
 # ==============================================================================
 # 🎯 KEEP THESE FILES (COMMENTED FOR CLARITY)
 # ==============================================================================
-# !sryoda.png              # SRYODA droid logo
+# !yoda.png              # YODA droid logo
 # !requirements_ui.txt     # Dependencies
 # !README_UI.md           # Documentation
 # !schemas/*.json         # MCP tool schemas
 # !mcp/*.py              # MCP modules
-# !*.py                  # Python source files 
+# !*.py                  # Python source files services_cache.json

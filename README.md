@@ -1,12 +1,12 @@
-# 🚀 SRYODA Galactic Command Center
+# 🚀 YODA Galactic Command Center
 
 <div align="center">
-  <img src="sryoda.png" alt="SRYODA - Strategic Reliability Engineering Operations & DataDog Analytics" width="200" height="200" style="border-radius: 50%; border: 4px solid #00ffff; box-shadow: 0 0 25px #00ffff;">
+  <img src="yoda.png" alt="YODA - Strategic Reliability Engineering Operations & DataDog Analytics" width="200" height="200" style="border-radius: 50%; border: 4px solid #00ffff; box-shadow: 0 0 25px #00ffff;">
 </div>
 
 ## ⭐ Strategic Reliability Engineering Operations & DataDog Analytics
 
-Welcome to the **SRYODA Galactic Command Center**! A Star Wars themed web interface built by EVIL-CORP's finest engineers that transforms your infrastructure monitoring into an epic galactic experience. This sophisticated SRE droid provides Jedi-level DataDog monitoring capabilities.
+Welcome to the **YODA Galactic Command Center**! A Star Wars themed web interface built by EVIL-CORP's finest engineers that transforms your infrastructure monitoring into an epic galactic experience. This sophisticated SRE droid provides Jedi-level DataDog monitoring capabilities.
 
 <div align="center">
   
@@ -22,14 +22,14 @@ Welcome to the **SRYODA Galactic Command Center**! A Star Wars themed web interf
 
 ### 🌌 Epic Star Wars Opening Crawl
 <div align="center">
-  <img src="intro.png" alt="SRYODA Opening Crawl - The Ops Strike Back" width="800" style="border-radius: 10px; border: 2px solid #00ffff; box-shadow: 0 0 20px rgba(0,255,255,0.3);">
+  <img src="intro.png" alt="YODA Opening Crawl - The Ops Strike Back" width="800" style="border-radius: 10px; border: 2px solid #00ffff; box-shadow: 0 0 20px rgba(0,255,255,0.3);">
   <p><em>Experience the legendary opening crawl: "The Ops Strike Back" - where infrastructure monitoring becomes an epic galactic adventure!</em></p>
 </div>
 
 ### 🚀 Main Command Center Dashboard
 <div align="center">
-  <img src="dashboard.png" alt="SRYODA Main Dashboard Interface" width="800" style="border-radius: 10px; border: 2px solid #00ffff; box-shadow: 0 0 20px rgba(0,255,255,0.3);">
-  <p><em>The futuristic SRYODA command center with holographic effects, intelligent chat interface, and comprehensive DataDog monitoring tools.</em></p>
+  <img src="dashboard.png" alt="YODA Main Dashboard Interface" width="800" style="border-radius: 10px; border: 2px solid #00ffff; box-shadow: 0 0 20px rgba(0,255,255,0.3);">
+  <p><em>The futuristic YODA command center with holographic effects, intelligent chat interface, and comprehensive DataDog monitoring tools.</em></p>
 </div>
 
 ## 🌟 Features
@@ -37,9 +37,9 @@ Welcome to the **SRYODA Galactic Command Center**! A Star Wars themed web interf
 ### 🎨 **Immersive Star Wars Experience**
 - 🌌 **Star Wars Opening Crawl** - Epic intro animation with "The Ops Strike Back"
 - ✨ **Holographic UI Effects** - Animated glows, sweeping light effects
-- 🤖 **SRYODA Droid Personality** - Wise, experienced droid with Star Wars references
+- 🤖 **YODA Droid Personality** - Wise, experienced droid with Star Wars references
 - 🎭 **Galactic Terminology** - "Young Padawan", "Commander", "disturbances in the Force"
-- 🖼️ **Custom Logo Display** - Base64 encoded SRYODA image with glowing effects
+- 🖼️ **Custom Logo Display** - Base64 encoded YODA image with glowing effects
 - ⚡ **Smooth Animations** - Responsive hover effects and transitions
 - 🚀 **Futuristic Design** - Orbitron & Exo 2 fonts, neon gradients
 
@@ -58,7 +58,7 @@ Welcome to the **SRYODA Galactic Command Center**! A Star Wars themed web interf
 - 🔧 **Automatic Tool Execution** - Seamless DataDog API integration
 - 📊 **Rich Result Formatting** - Structured output with Star Wars styling
 - ⚡ **Real-time Processing** - Instant command execution and analysis
-- 🎭 **Context-Aware Responses** - SRYODA personality in every interaction
+- 🎭 **Context-Aware Responses** - YODA personality in every interaction
 
 ### 🏗️ **Modular Architecture**
 - 📁 **Clean Code Structure** - 4 focused, maintainable modules
@@ -88,13 +88,13 @@ python start_ui.py
 ```bash
 # Option 2: Manual setup
 pip install -r requirements_ui.txt
-python sryoda_ui.py
+python yoda_ui.py
 ```
 
 ### 🔑 **Environment Configuration**
 Create a `.env` file in the project root:
 ```env
-# OpenAI Configuration (Required for SRYODA droid intelligence)
+# OpenAI Configuration (Required for YODA droid intelligence)
 OPENAI_API_KEY=your_openai_api_key_here
 OPENAI_MODEL=gpt-4  # Optional, defaults to gpt-3.5-turbo
 
@@ -103,8 +103,8 @@ DD_API_KEY=your_datadog_api_key_here
 DD_APP_KEY=your_datadog_app_key_here
 DD_SITE=api.datadoghq.com  # Change if using EU: api.datadoghq.eu
 
-# Optional: Customize SRYODA behavior
-SRYODA_PERSONALITY=droid  # Options: droid, jedi, empire
+# Optional: Customize YODA behavior
+YODA_PERSONALITY=droid  # Options: droid, jedi, empire
 ```
 
 ### 🌌 **Launch the Galactic Command Center**
@@ -113,10 +113,10 @@ SRYODA_PERSONALITY=droid  # Options: droid, jedi, empire
 python start_ui.py
 
 # Or run directly
-python sryoda_ui.py
+python yoda_ui.py
 ```
 
-The SRYODA Command Center will be available at: `http://localhost:7860`
+The YODA Command Center will be available at: `http://localhost:7860`
 
 ## 🎯 Command Examples
 
@@ -179,7 +179,7 @@ The SRYODA Command Center will be available at: `http://localhost:7860`
 ### 📁 **Modular File Organization**
 ```
 mcp-04/
-├── 🚀 sryoda_ui.py           # Main UI assembly (113 lines)
+├── 🚀 yoda_ui.py           # Main UI assembly (113 lines)
 ├── 🎨 ui_styles.py           # CSS styling & themes (486 lines)
 ├── 🧩 ui_components.py       # HTML components & layout (388 lines)
 ├── ⚙️ ui_handlers.py         # Message processing & logic (139 lines)
@@ -187,7 +187,7 @@ mcp-04/
 ├── 📋 start_ui.py           # Automatic startup script
 ├── 🔗 mcp_loader.py         # Dynamic MCP tool loader
 ├── 📄 requirements_ui.txt   # Python dependencies
-├── 🖼️ sryoda.png            # SRYODA droid logo
+├── 🖼️ yoda.png            # YODA droid logo
 ├── 📚 README.md             # This documentation
 ├── 🔐 .gitignore            # Git ignore rules
 ├── 📁 mcp/                  # MCP tool modules
@@ -237,7 +237,7 @@ mcp-04/
 - 📱 **Responsive Design** - Scales perfectly from mobile to desktop
 - 🎭 **Loading Animations** - Spinning elements with gradient borders
 
-### 🤖 **SRYODA Personality System**
+### 🤖 **YODA Personality System**
 
 #### 🎭 **Personality Traits**
 - **Wise Mentor** - Experienced droid with dry humor
@@ -248,16 +248,16 @@ mcp-04/
 #### 💬 **Response Examples**
 ```
 ❌ Standard: "Found 3 alerts"
-✅ SRYODA: "Sensors detect 3 disturbances in the Force, Commander"
+✅ YODA: "Sensors detect 3 disturbances in the Force, Commander"
 
 ❌ Standard: "Database error detected"
-✅ SRYODA: "Tremor in the Imperial database systems, young Padawan"
+✅ YODA: "Tremor in the Imperial database systems, young Padawan"
 
 ❌ Standard: "High CPU usage"
-✅ SRYODA: "The Empire's processors show signs of stress, Master"
+✅ YODA: "The Empire's processors show signs of stress, Master"
 
 ❌ Standard: "System is healthy"
-✅ SRYODA: "All systems showing green, Commander. The Force is strong with our infrastructure"
+✅ YODA: "All systems showing green, Commander. The Force is strong with our infrastructure"
 ```
 
 #### 🗣️ **Speech Patterns**
@@ -287,12 +287,12 @@ star_wars_css = """
 }
 ```
 
-### 🤖 **SRYODA Personality**
+### 🤖 **YODA Personality**
 Modify `ui_handlers.py`:
 ```python
 # Customize the droid's system message
 system_message = f"""
-You are SRYODA, customize personality here...
+You are YODA, customize personality here...
 - Add your own references
 - Change speech patterns
 - Modify behavior directives
@@ -352,12 +352,12 @@ netstat -ano | findstr :7860  # Windows
 lsof -i :7860                 # macOS/Linux
 
 # Use different port
-python -c "from sryoda_ui import create_sryoda_ui; create_sryoda_ui().launch(server_port=7861)"
+python -c "from yoda_ui import create_yoda_ui; create_yoda_ui().launch(server_port=7861)"
 ```
 
 ### 🔧 **Runtime Troubleshooting**
 
-#### 🤖 **SRYODA Not Responding**
+#### 🤖 **YODA Not Responding**
 - ✅ Verify OpenAI API key is valid
 - ✅ Check API usage limits
 - ✅ Ensure internet connection
@@ -394,8 +394,8 @@ python -c "from sryoda_ui import create_sryoda_ui; create_sryoda_ui().launch(ser
 ### 🎵 **Audio Experience**
 - 🔊 **Star Wars Sound Effects** - Button clicks, alerts, confirmations
 - 🎼 **Ambient Music** - Optional Imperial March background
-- 📢 **Voice Commands** - "SRYODA, show me alerts"
-- 🗣️ **Text-to-Speech** - SRYODA speaks responses
+- 📢 **Voice Commands** - "YODA, show me alerts"
+- 🗣️ **Text-to-Speech** - YODA speaks responses
 
 ### 📊 **Advanced Visualizations**
 - 📈 **Real-time Charts** - Interactive D3.js visualizations
@@ -417,7 +417,7 @@ python -c "from sryoda_ui import create_sryoda_ui; create_sryoda_ui().launch(ser
 
 ## 🎯 Contributing to the Galaxy
 
-May the Force guide your contributions to SRYODA!
+May the Force guide your contributions to YODA!
 
 ### 🚀 **Getting Started**
 1. 🍴 Fork the repository
@@ -430,14 +430,14 @@ May the Force guide your contributions to SRYODA!
 
 ### 🎨 **Contribution Areas**
 - 🎭 **UI/UX Improvements** - Enhanced visual effects
-- 🤖 **SRYODA Personality** - New response patterns
+- 🤖 **YODA Personality** - New response patterns
 - 🔧 **Tool Integration** - Additional DataDog endpoints
 - 📊 **Visualizations** - Charts and graphs
 - 🐛 **Bug Fixes** - Code improvements
 - 📚 **Documentation** - Guides and examples
 
 ### 🌟 **Recognition**
-Contributors will be honored in the SRYODA Hall of Fame!
+Contributors will be honored in the YODA Hall of Fame!
 
 ## 📜 License & Credits
 
@@ -447,7 +447,7 @@ Developed with ❤️, ☕ caffeine, and 🌟 lots of Star Wars inspiration by E
 ### 🎬 **Acknowledgments**
 - **Star Wars Universe** - For endless inspiration
 - **DataDog** - For powerful monitoring APIs
-- **OpenAI** - For making SRYODA intelligent
+- **OpenAI** - For making YODA intelligent
 - **Gradio** - For the beautiful web interface framework
 - **SRE Community** - For keeping the galaxy running
 
@@ -462,9 +462,9 @@ This project is built for educational and internal use. Please respect:
 ## 🌟 May the Force be with your Infrastructure 🌟
 
 <div align="center">
-  <img src="sryoda.png" alt="SRYODA Droid" width="100" height="100" style="border-radius: 50%;">
+  <img src="yoda.png" alt="YODA Droid" width="100" height="100" style="border-radius: 50%;">
   
-  *"In a galaxy far, far away, where systems never fail and alerts are always clear, there exists a legendary SRE droid named SRYODA. This is that droid's interface."*
+  *"In a galaxy far, far away, where systems never fail and alerts are always clear, there exists a legendary SRE droid named YODA. This is that droid's interface."*
 </div>
 
 ### 🚀 **Ready to Begin Your Journey?**

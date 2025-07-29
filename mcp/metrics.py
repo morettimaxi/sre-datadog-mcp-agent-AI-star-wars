@@ -101,24 +101,29 @@ def query_metrics_mcp(query, time_range="1 hour", **kwargs):
         
         # DATADOG METRICS API CALL
         url = f"https://{DD_SITE}/api/v1/query"
+        print(f"🌐 API URL: {url}")
+        
         headers = {
             'DD-API-KEY': DD_API_KEY,
             'DD-APPLICATION-KEY': DD_APP_KEY,
             'Accept': 'application/json'
         }
         
-        # Build query parameters
         params = {
             'query': query,
             'from': time_ago,
             'to': now
         }
         
-        response = requests.get(url, headers=headers, params=params, verify=False)
+        print(f"📋 API Params: {params}")
+        
+        response = requests.get(url, headers=headers, params=params, timeout=30)
         
         if response.status_code == 200:
             data = response.json()
             series = data.get('series', [])
+            print(f"📥 API Response: {response.status_code} - {len(series)} metrics series received")
+            print(f"🔍 Raw response keys: {list(data.keys())}")
             
             # Format metrics data for easier reading
             formatted_metrics = []
@@ -508,4 +513,187 @@ def get_application_metrics_mcp(service=None, time_range="1 hour", **kwargs):
         "service_filter": service,
         "time_range": time_range,
         "metrics_queried": app_queries
+    } 
+
+def get_kubernetes_metrics_mcp(service=None, time_range="1 hour", **kwargs):
+    """
+    MCP Function to get Kubernetes metrics (CPU, memory, pods)
+    
+    Args:
+        service (str): Kubernetes service/deployment name (e.g., 'front-prod', 'api-service')
+        time_range (str): Time range for metrics
+    """
+    
+    # Build service filter for Kubernetes
+    if service:
+        service_filter = f"{{kube_deployment:{service}}}"
+    else:
+        service_filter = "{*}"
+    
+    # Kubernetes metrics queries
+    k8s_queries = [
+        f"avg:kubernetes.cpu.usage.total{service_filter}",
+        f"avg:kubernetes.memory.usage{service_filter}",
+        f"avg:kubernetes.memory.working_set{service_filter}",
+        f"sum:kubernetes.containers.running{service_filter}",
+        f"avg:kubernetes.cpu.limits{service_filter}",
+        f"avg:kubernetes.memory.limits{service_filter}"
+    ]
+    
+    results = []
+    for query in k8s_queries:
+        result = query_metrics_mcp(query=query, time_range=time_range, **kwargs)
+        if result['success']:
+            results.extend(result['data'])
+    
+    return {
+        "success": True,
+        "error": None,
+        "data": results,
+        "service_filter": service,
+        "time_range": time_range,
+        "metrics_queried": k8s_queries,
+        "deployment_name": service
+    } 
+
+def get_apm_metrics_mcp(service=None, time_range="1 hour", metric_types=None, limit=20, **kwargs):
+    """
+    MCP Function to get APM metrics using auto-discovery (NO hardcoding)
+    
+    Args:
+        service (str): Filter by service name (will search in metric names)
+        time_range (str): Time range for metrics
+        metric_types (list): Types of metrics to fetch (auto-discovered if not provided)
+        limit (int): Maximum number of metrics to analyze
+    """
+    
+    # Step 1: Get ALL trace metrics (auto-discovery)
+    trace_search = search_metrics_mcp(metric_name='trace')
+    
+    if not trace_search['success']:
+        return {
+            "success": False,
+            "error": "Failed to search for trace metrics",
+            "data": []
+        }
+    
+    available_metrics = trace_search['data']
+    metric_names = [m['name'] for m in available_metrics]
+    
+    print(f"🔍 Auto-discovery: Found {len(metric_names)} trace metrics")
+    
+    # Step 2: AUTO-DISCOVER metric types by analyzing suffixes
+    discovered_types = {}
+    service_patterns = {}
+    operation_patterns = {}
+    
+    for metric_name in metric_names:
+        # Extract metric type (everything after last dot)
+        if '.' in metric_name:
+            metric_type = metric_name.split('.')[-1]
+            discovered_types[metric_type] = discovered_types.get(metric_type, 0) + 1
+        
+        # Extract service patterns (trace.SERVICE.operation.type)
+        parts = metric_name.replace('trace.', '').split('.')
+        if len(parts) >= 2:
+            service_part = parts[0]
+            operation_part = '.'.join(parts[1:-1]) if len(parts) > 2 else parts[0]
+            
+            service_patterns[service_part] = service_patterns.get(service_part, 0) + 1
+            operation_patterns[operation_part] = operation_patterns.get(operation_part, 0) + 1
+    
+    # Step 3: Use discovered types or provided ones
+    if not metric_types:
+        # Use top discovered types
+        metric_types = sorted(discovered_types.keys(), key=lambda x: discovered_types[x], reverse=True)[:5]
+        print(f"📊 Auto-discovered metric types: {metric_types}")
+    
+    # Step 4: Smart filtering based on service
+    filtered_metrics = []
+    
+    if service:
+        print(f"🎯 Filtering for service: '{service}'")
+        # Multiple strategies for service matching
+        for metric_name in metric_names:
+            service_lower = service.lower()
+            metric_lower = metric_name.lower()
+            
+            # Strategy 1: Direct service name match
+            if service_lower in metric_lower:
+                filtered_metrics.append(metric_name)
+                continue
+            
+            # Strategy 2: Service as part of operation
+            parts = metric_name.replace('trace.', '').split('.')
+            if any(service_lower in part.lower() for part in parts):
+                filtered_metrics.append(metric_name)
+                continue
+    else:
+        filtered_metrics = metric_names
+    
+    # Step 5: Filter by metric types
+    type_filtered_metrics = []
+    for metric_name in filtered_metrics:
+        for metric_type in metric_types:
+            if metric_name.endswith(f'.{metric_type}'):
+                type_filtered_metrics.append(metric_name)
+                break
+    
+    # Step 6: Smart sampling (no hardcoded patterns)
+    if len(type_filtered_metrics) > limit:
+        # Prioritize by frequency of operation patterns
+        scored_metrics = []
+        for metric_name in type_filtered_metrics:
+            parts = metric_name.replace('trace.', '').split('.')
+            operation = '.'.join(parts[:-1]) if len(parts) > 1 else parts[0]
+            frequency_score = operation_patterns.get(operation, 0)
+            scored_metrics.append((metric_name, frequency_score))
+        
+        # Sort by frequency and take top ones
+        scored_metrics.sort(key=lambda x: x[1], reverse=True)
+        final_metrics = [m[0] for m in scored_metrics[:limit]]
+    else:
+        final_metrics = type_filtered_metrics
+    
+    print(f"📈 Querying {len(final_metrics)} metrics out of {len(type_filtered_metrics)} candidates")
+    
+    # Step 7: Query actual metrics
+    results = []
+    queries_made = []
+    
+    for metric_name in final_metrics:
+        query = f"avg:{metric_name}{{*}}"
+        queries_made.append(query)
+        
+        result = query_metrics_mcp(query=query, time_range=time_range, **kwargs)
+        if result['success'] and result['data']:
+            # Auto-detect metric type and operation from name
+            parts = metric_name.replace('trace.', '').split('.')
+            metric_type = parts[-1] if parts else 'unknown'
+            operation = '.'.join(parts[:-1]) if len(parts) > 1 else parts[0] if parts else 'unknown'
+            
+            for data_point in result['data']:
+                data_point['metric_type'] = metric_type
+                data_point['operation'] = operation
+                data_point['full_metric_name'] = metric_name
+                
+            results.extend(result['data'])
+    
+    return {
+        "success": True,
+        "error": None,
+        "data": results,
+        "autodiscovery_info": {
+            "total_trace_metrics": len(available_metrics),
+            "discovered_metric_types": dict(sorted(discovered_types.items(), key=lambda x: x[1], reverse=True)),
+            "discovered_services": dict(sorted(service_patterns.items(), key=lambda x: x[1], reverse=True)[:10]),
+            "top_operations": dict(sorted(operation_patterns.items(), key=lambda x: x[1], reverse=True)[:10]),
+            "used_metric_types": metric_types,
+            "service_filter": service,
+            "filtered_metrics_count": len(type_filtered_metrics),
+            "queried_metrics_count": len(final_metrics),
+            "metrics_with_data": len(results)
+        },
+        "time_range": time_range,
+        "queries_executed": queries_made
     } 

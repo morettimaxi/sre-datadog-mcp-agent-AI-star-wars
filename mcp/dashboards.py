@@ -101,19 +101,33 @@ def list_dashboards_mcp(name=None, tags=None, **kwargs):
             'Accept': 'application/json'
         }
         
-        print(f"🔄 MCP: Calling Datadog Dashboards API...")
+        filters_applied = []
+        if name:
+            filters_applied.append(f"name='{name}'")
+        if tags:
+            filters_applied.append(f"tags={tags}")
+        filter_info = ", ".join(filters_applied) if filters_applied else "no filters"
+        
+        print(f"🔄 MCP: Calling Datadog Dashboards API with {filter_info}")
+        print(f"🌐 API URL: {url}")
         response = requests.get(url, headers=headers, verify=False)
         
         if response.status_code == 200:
             data = response.json()
             dashboards = data.get('dashboards', [])
+            print(f"📥 API Response: {response.status_code} - {len(dashboards)} dashboards received")
+            print(f"🔍 Raw response keys: {list(data.keys())}")
+            
             filtered_dashboards = []
+            skipped_by_name = 0
+            skipped_by_tags = 0
             
             for dashboard in dashboards:
                 # Apply name filter if provided
                 if name:
                     dashboard_title = dashboard.get('title', '').lower()
                     if name.lower() not in dashboard_title:
+                        skipped_by_name += 1
                         continue
                 
                 # Apply tags filter if provided
@@ -121,6 +135,7 @@ def list_dashboards_mcp(name=None, tags=None, **kwargs):
                     dashboard_description = dashboard.get('description', '')
                     dashboard_tags = [tag.strip() for tag in dashboard_description.split(',') if tag.strip()]
                     if not all(tag in dashboard_tags for tag in tags):
+                        skipped_by_tags += 1
                         continue
                 
                 dashboard_info = {
@@ -134,6 +149,15 @@ def list_dashboards_mcp(name=None, tags=None, **kwargs):
                     "url": f"https://app.datadoghq.com/dashboard/{dashboard.get('id')}"
                 }
                 filtered_dashboards.append(dashboard_info)
+            
+            # Debug summary
+            total_received = len(dashboards)
+            total_returned = len(filtered_dashboards)
+            print(f"🎯 Filtering Summary:")
+            print(f"   📊 Total received: {total_received}")
+            print(f"   🚫 Skipped by name filter: {skipped_by_name}")
+            print(f"   🚫 Skipped by tags filter: {skipped_by_tags}")
+            print(f"   ✅ Final results: {total_returned}")
             
             return {
                 "success": True,

@@ -482,5 +482,5 @@ button:hover {
 """
 
 def get_combined_css():
-    """Return combined CSS for the SRYODA interface"""
+    """Return combined CSS for the YODA interface"""
     return opening_crawl_css + star_wars_css 

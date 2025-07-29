@@ -163,6 +163,76 @@
           "call": "search_error_logs(time_range='1 day', limit=50)"
         }
       ]
+    },
+    {
+      "name": "get_available_services",
+      "handler": "mcp.logs:get_available_services_mcp",
+      "description": "Discover available services with recent activity (intelligent caching - 4h cache duration)",
+      "parameters": {
+        "time_range": {
+          "type": "string",
+          "description": "Time range to look for active services",
+          "optional": true,
+          "default": "1 day"
+        },
+        "limit": {
+          "type": "integer",
+          "description": "Maximum number of services to return",
+          "optional": true,
+          "default": 50
+        },
+        "force_refresh": {
+          "type": "boolean",
+          "description": "Force refresh cache even if valid (for getting latest data)",
+          "optional": true,
+          "default": false
+        }
+      },
+      "examples": [
+        {
+          "description": "Get available services (uses cache if available)",
+          "call": "get_available_services(time_range='1 day')"
+        },
+        {
+          "description": "Get top 20 active services",
+          "call": "get_available_services(limit=20, time_range='4 hours')"
+        },
+        {
+          "description": "Force refresh cache for latest data",
+          "call": "get_available_services(force_refresh=true)"
+        }
+      ]
+    },
+    {
+      "name": "find_similar_service",
+      "handler": "mcp.logs:find_similar_service_mcp",
+      "description": "Find similar service names using fuzzy matching (for handling typos and validation)",
+      "parameters": {
+        "user_input": {
+          "type": "string",
+          "description": "Service name provided by user (possibly with typos or partial match)"
+        },
+        "threshold": {
+          "type": "number",
+          "description": "Similarity threshold (0.0 to 1.0)",
+          "optional": true,
+          "default": 0.6
+        }
+      },
+      "examples": [
+        {
+          "description": "Find similar service for typo",
+          "call": "find_similar_service(user_input='web-backnd')"
+        },
+        {
+          "description": "Check if service exists exactly",
+          "call": "find_similar_service(user_input='web-backend')"
+        },
+        {
+          "description": "Find partial matches",
+          "call": "find_similar_service(user_input='market', threshold=0.5)"
+        }
+      ]
     }
   ]
 } 

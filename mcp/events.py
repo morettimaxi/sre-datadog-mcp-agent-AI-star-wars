@@ -124,9 +124,12 @@ def search_events_mcp(query="", time_range="1 day", priority=None, sources=None,
         if response.status_code == 200:
             data = response.json()
             events = data.get('events', [])
+            print(f"📥 API Response: {response.status_code} - {len(events)} events received")
+            print(f"🔍 Raw response keys: {list(data.keys())}")
             
             # Filter by text query if provided
             if query.strip():
+                print(f"🔍 Applying text filter for query: '{query}'")
                 filtered_events = []
                 query_lower = query.lower()
                 for event in events:
@@ -137,9 +140,11 @@ def search_events_mcp(query="", time_range="1 day", priority=None, sources=None,
                     if query_lower in title or query_lower in text:
                         filtered_events.append(event)
                 events = filtered_events
+                print(f"🎯 After text filtering: {len(events)} events remain")
             
             # Limit results
             events = events[:limit]
+            print(f"📊 Final result: {len(events)} events (after limit={limit})")
             
             # Format events for easier reading
             formatted_events = []
@@ -220,20 +225,61 @@ def get_deployment_events_mcp(time_range="1 day", service=None, limit=50, **kwar
         limit (int): Maximum number of events to return
     """
     
-    # Build deployment query
-    deployment_terms = ["deploy", "deployment", "release", "version", "build"]
+    # Try multiple deployment-related searches and combine results
+    deployment_queries = []
     
     if service:
-        query = f"deployment {service}"
+        # Service-specific queries
+        deployment_queries = [
+            f"deployment {service}",
+            f"deploy {service}", 
+            f"{service} deployment",
+            f"{service} updated"
+        ]
     else:
-        query = "deployment OR deploy OR release"
+        # General deployment queries
+        deployment_queries = [
+            "deployment updated",
+            "kubernetes deployment", 
+            "service updated",
+            "deploy",
+            "release"
+        ]
     
-    return search_events_mcp(
-        query=query,
-        time_range=time_range,
-        limit=limit,
-        **kwargs
-    )
+    all_events = []
+    seen_event_ids = set()
+    
+    # Search with each query and combine unique results
+    for query in deployment_queries:
+        result = search_events_mcp(
+            query=query,
+            time_range=time_range,
+            limit=limit,
+            **kwargs
+        )
+        
+        if result['success'] and result['data']:
+            for event in result['data']:
+                event_id = event.get('id')
+                if event_id and event_id not in seen_event_ids:
+                    all_events.append(event)
+                    seen_event_ids.add(event_id)
+    
+    # Sort by timestamp (newest first)
+    all_events.sort(key=lambda x: x.get('date_happened', 0), reverse=True)
+    
+    # Limit final results
+    final_events = all_events[:limit]
+    
+    return {
+        "success": True,
+        "error": None,
+        "data": final_events,
+        "total_events": len(final_events),
+        "deployment_queries_used": deployment_queries,
+        "service_filter": service,
+        "time_range": time_range
+    }
 
 def analyze_event_patterns_mcp(time_range="1 day", **kwargs):
     """
