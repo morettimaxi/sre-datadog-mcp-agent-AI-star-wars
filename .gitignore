@@ -359,3 +359,6 @@ doc/build/
 # !schemas/*.json         # MCP tool schemas
 # !mcp/*.py              # MCP modules
 # !*.py                  # Python source files services_cache.json
+
+# Sensitive service cache - DO NOT UPLOAD
+services_cache.json
