@@ -39,6 +39,17 @@ LLM_API_URL=https://api.openai.com/v1/chat/completions
 # Lower values = less context but better performance
 CONVERSATION_LIMIT=5
 
+# Token Optimization Settings
+# Maximum number of log entries to display (1-100)
+# Default: 10 (prevents token overflow with large log results)
+# Lower values = better token performance, fewer logs shown
+LOG_DISPLAY_LIMIT=10
+
+# Maximum characters per log message (20-500)
+# Default: 80 (truncates long log messages to save tokens)
+# Lower values = more aggressive truncation, better token performance
+MAX_MESSAGE_LENGTH=80
+
 # ============================================
 # 🔒 SECURITY CONFIGURATION
 # ============================================
@@ -78,4 +89,11 @@ PRELOAD_CACHES=false
 # CONVERSATION_LIMIT=20
 
 # Token-optimized (minimal context):
-# CONVERSATION_LIMIT=2 
+# CONVERSATION_LIMIT=2
+# LOG_DISPLAY_LIMIT=5
+# MAX_MESSAGE_LENGTH=50
+
+# Ultra token-optimized (for 848k token errors):
+# CONVERSATION_LIMIT=1
+# LOG_DISPLAY_LIMIT=3
+# MAX_MESSAGE_LENGTH=30 

@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 # Add current directory to path for imports
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from mcp_loader import get_requests_verify, get_llm_api_url
+from mcp_loader import get_requests_verify, get_llm_api_url, get_log_display_limit, get_max_message_length
 
 # Initialize
 load_dotenv()
@@ -268,9 +268,19 @@ def format_tool_result(result):
         if len(data) == 0:
             return "✅ No results found."
         
-        # Format list results
+        # Format list results with intelligent limits to prevent token overflow
         total_count = len(data)
-        show_limit = 50  # Show first 50, then pagination
+        
+        # Check if this is log data (usually has 'message' field)
+        is_log_data = data and isinstance(data[0], dict) and 'message' in data[0]
+        
+        # Apply stricter limits for logs to prevent token issues (configurable via .env)
+        if is_log_data:
+            show_limit = get_log_display_limit()  # Configurable log limit (default: 10)
+            max_message_length = get_max_message_length()  # Configurable message length (default: 80)
+        else:
+            show_limit = 50  # Normal limit for other data
+            max_message_length = 100
         
         formatted = f"📊 Found {total_count} results:\n\n"
         
@@ -296,7 +306,10 @@ def format_tool_result(result):
                     if 'scope' in item:
                         formatted += f"   Scope: {item.get('scope', 'Unknown')}\n"
                 elif 'message' in item:  # Log format
-                    formatted += f"📝 {i}. {item.get('message', '')[:100]}...\n"
+                    message = item.get('message', '')
+                    # Truncate message to prevent token overflow
+                    truncated_message = message[:max_message_length] + ('...' if len(message) > max_message_length else '')
+                    formatted += f"📝 {i}. {truncated_message}\n"
                     if 'timestamp' in item:
                         formatted += f"   Time: {item.get('timestamp', 'Unknown')}\n"
                     if 'status' in item:
@@ -308,8 +321,13 @@ def format_tool_result(result):
         # Add pagination info if needed
         if total_count > show_limit:
             remaining = total_count - show_limit
-            formatted += f"\n📝 **Showing first {show_limit} of {total_count} results**\n"
-            formatted += f"⚡ *{remaining} more results available - use filters to narrow down*\n"
+            if is_log_data:
+                formatted += f"\n📝 **Showing first {show_limit} of {total_count} logs** (Token limit applied)\n"
+                formatted += f"🚨 *{remaining} more logs available - use time filters or specific services to narrow down*\n"
+                formatted += f"💡 *Tip: Use CONVERSATION_LIMIT=1 in .env for better token performance*\n"
+            else:
+                formatted += f"\n📝 **Showing first {show_limit} of {total_count} results**\n"
+                formatted += f"⚡ *{remaining} more results available - use filters to narrow down*\n"
         
         return formatted
     

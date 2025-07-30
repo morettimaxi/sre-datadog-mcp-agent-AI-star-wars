@@ -35,6 +35,39 @@ def _validate_conversation_limit():
 
 CONVERSATION_LIMIT = _validate_conversation_limit()
 
+# TOKEN OPTIMIZATION LIMITS
+def _validate_log_limit():
+    """Validate and return log display limit with fallback to default"""
+    try:
+        limit = int(os.getenv('LOG_DISPLAY_LIMIT', '10'))
+        # Ensure limit is between 1 and 100
+        if 1 <= limit <= 100:
+            return limit
+        else:
+            print(f"⚠️  Invalid LOG_DISPLAY_LIMIT={limit}. Using default: 10")
+            return 10
+    except (ValueError, TypeError):
+        print(f"⚠️  Invalid LOG_DISPLAY_LIMIT='{os.getenv('LOG_DISPLAY_LIMIT')}'. Using default: 10")
+        return 10
+
+LOG_DISPLAY_LIMIT = _validate_log_limit()
+
+def _validate_message_length():
+    """Validate and return max message length with fallback to default"""
+    try:
+        length = int(os.getenv('MAX_MESSAGE_LENGTH', '80'))
+        # Ensure length is between 20 and 500
+        if 20 <= length <= 500:
+            return length
+        else:
+            print(f"⚠️  Invalid MAX_MESSAGE_LENGTH={length}. Using default: 80")
+            return 80
+    except (ValueError, TypeError):
+        print(f"⚠️  Invalid MAX_MESSAGE_LENGTH='{os.getenv('MAX_MESSAGE_LENGTH')}'. Using default: 80")
+        return 80
+
+MAX_MESSAGE_LENGTH = _validate_message_length()
+
 def get_ssl_verify():
     """
     Get SSL verification setting from environment variable
@@ -72,6 +105,14 @@ def configure_ssl_warnings():
         print(f"💭 Conversation History: {CONVERSATION_LIMIT} conversations ({CONVERSATION_LIMIT * 2} messages)")
     else:
         print(f"💭 Conversation History: DEFAULT (5 conversations, 10 messages)")
+    
+    # Show token optimization settings
+    log_env_value = os.getenv('LOG_DISPLAY_LIMIT')
+    msg_env_value = os.getenv('MAX_MESSAGE_LENGTH')
+    if log_env_value or msg_env_value:
+        print(f"🚨 Token Limits: {LOG_DISPLAY_LIMIT} logs max, {MAX_MESSAGE_LENGTH} chars per message")
+    else:
+        print(f"🚨 Token Limits: DEFAULT (10 logs max, 80 chars per message)")
 
 # Initialize SSL configuration
 configure_ssl_warnings()
@@ -114,6 +155,32 @@ def get_conversation_limit():
         Default: 5 (5 user + 5 assistant = 10 messages)
     """
     return CONVERSATION_LIMIT
+
+def get_log_display_limit():
+    """
+    Get log display limit from environment variable
+    
+    Returns:
+        int: Maximum number of logs to display (to prevent token overflow)
+        
+    Environment Variable:
+        LOG_DISPLAY_LIMIT: Number of log entries to show (1-100)
+        Default: 10 (optimized for token limits)
+    """
+    return LOG_DISPLAY_LIMIT
+
+def get_max_message_length():
+    """
+    Get maximum message length from environment variable
+    
+    Returns:
+        int: Maximum characters per log message (to prevent token overflow)
+        
+    Environment Variable:
+        MAX_MESSAGE_LENGTH: Max characters per message (20-500)
+        Default: 80 (optimized for token limits)
+    """
+    return MAX_MESSAGE_LENGTH
 
 class MCPLoader:
     """
