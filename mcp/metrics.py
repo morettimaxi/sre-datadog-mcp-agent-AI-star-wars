@@ -1273,18 +1273,32 @@ def get_cloud_resource_health_mcp(resource_name, resource_type, cloud_provider, 
             base_filter = f"{{name:{resource_name}}}"
         provider_display = f"Azure {resource_type.upper()}"
         
-        # Azure resource type mappings
+        # Use DYNAMIC discovery instead of hardcoded metrics
         if resource_type == "redis":
-            metric_queries = [
-                f"avg:azure.cache_redis.processor_time{base_filter}",
-                f"avg:azure.cache_redis.used_memory_percentage{base_filter}",
-                f"avg:azure.cache_redis.server_load{base_filter}",
-                f"sum:azure.cache_redis.cache_hits{base_filter}",
-                f"sum:azure.cache_redis.cache_misses{base_filter}",
-                f"avg:azure.cache_redis.connected_clients{base_filter}",
-                f"sum:azure.cache_redis.cache_reads{base_filter}",
-                f"sum:azure.cache_redis.cache_writes{base_filter}"
-            ]
+            # Search for all azure redis metrics
+            search_pattern = "azure.cache_redis" if cloud_provider.lower() == "azure" else "redis"
+            discovery_result = get_dynamic_resource_metrics_mcp(
+                resource_pattern=search_pattern,
+                cloud_provider="azure",
+                time_range=time_range,
+                max_metrics=10,
+                **kwargs
+            )
+            
+            if discovery_result['success'] and discovery_result['data']:
+                # Use discovered metrics and apply our filter
+                discovered_queries = discovery_result.get('successful_queries', [])
+                metric_queries = []
+                for query in discovered_queries:
+                    # Replace {*} with our specific filter
+                    if "{*}" in query:
+                        filtered_query = query.replace("{*}", base_filter)
+                        metric_queries.append(filtered_query)
+                    else:
+                        metric_queries.append(query)
+            else:
+                # NO FALLBACK - If discovery fails, return empty
+                metric_queries = []
         elif resource_type == "vm":
             metric_queries = [
                 f"avg:azure.vm.percentage_cpu{base_filter}",
@@ -1382,68 +1396,37 @@ def get_cloud_resource_health_mcp(resource_name, resource_type, cloud_provider, 
             "failed_queries": failed_queries
         }
     
-    # Analyze health (reuse the analysis logic)
-    health_analysis = {
+    # Return RAW DATA ONLY - no health analysis
+    # The PROMPT will do the intelligent analysis
+    raw_data = {
         "resource_name": resource_name,
         "resource_type": resource_type,
         "cloud_provider": provider_display,
         "resource_group": resource_group,
-        "status": "unknown",
-        "summary": {},
-        "alerts": [],
-        "recommendations": [],
-        "raw_metrics": results,
         "time_range": time_range,
+        "raw_metrics": results,
         "successful_queries": len(successful_queries),
-        "failed_queries": len(failed_queries)
+        "failed_queries": len(failed_queries),
+        "metric_summary": {}
     }
     
-    # Quick health scoring
-    total_metrics = len(results)
-    health_score = 100
-    
+    # Create simple metric summary - NO HEALTH ANALYSIS
     for metric in results:
+        metric_name = metric.get('metric', 'unknown')
         if metric.get('latest_value') is not None:
-            value = metric['latest_value']
-            metric_name = metric.get('metric', '').lower()
-            
-            # CPU analysis
-            if 'cpu' in metric_name:
-                if value > 90:
-                    health_analysis["alerts"].append(f"🔴 High CPU: {value:.1f}%")
-                    health_score -= 25
-                elif value > 75:
-                    health_analysis["alerts"].append(f"🟡 Elevated CPU: {value:.1f}%")
-                    health_score -= 10
-                else:
-                    health_analysis["alerts"].append(f"✅ CPU OK: {value:.1f}%")
-            
-            # Memory analysis
-            elif 'memory' in metric_name or 'mem' in metric_name:
-                if value > 90:
-                    health_analysis["alerts"].append(f"🔴 High Memory: {value:.1f}%")
-                    health_score -= 25
-                elif value > 80:
-                    health_analysis["alerts"].append(f"🟡 Elevated Memory: {value:.1f}%")
-                    health_score -= 10
-                else:
-                    health_analysis["alerts"].append(f"✅ Memory OK: {value:.1f}%")
-    
-    # Set overall status
-    if health_score >= 80:
-        health_analysis["status"] = "🟢 HEALTHY"
-    elif health_score >= 60:
-        health_analysis["status"] = "🟡 WARNING"
-    else:
-        health_analysis["status"] = "🔴 CRITICAL"
-    
-    health_analysis["summary"]["health_score"] = health_score
-    health_analysis["summary"]["total_metrics"] = total_metrics
+            raw_data["metric_summary"][metric_name] = {
+                "latest_value": metric['latest_value'],
+                "min_value": metric.get('min_value'),
+                "max_value": metric.get('max_value'),
+                "avg_value": metric.get('avg_value'),
+                "unit": metric.get('unit', ''),
+                "data_points": len(metric.get('points', []))
+            }
     
     return {
         "success": True,
         "error": None,
-        "data": health_analysis
+        "data": raw_data
     }
 
 def get_dynamic_resource_metrics_mcp(resource_pattern, cloud_provider=None, time_range="1 hour", max_metrics=20, **kwargs):
