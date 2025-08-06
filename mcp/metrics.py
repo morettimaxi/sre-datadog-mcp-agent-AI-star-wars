@@ -744,14 +744,14 @@ def get_redis_metrics_mcp(service=None, time_range="1 hour", cloud_provider="aut
             provider_name = f"Azure Redis Cache ({service or 'all'})"
             
         cache_queries = [
-            f"avg:azure.redis_cache.percentprocessortime{service_filter}",
-            f"avg:azure.redis_cache.usedmemorypercentage{service_filter}",
-            f"avg:azure.redis_cache.serverload{service_filter}",
-            f"sum:azure.redis_cache.cachehits{service_filter}",
-            f"sum:azure.redis_cache.cachemisses{service_filter}",
-            f"avg:azure.redis_cache.connectedclients{service_filter}",
-            f"sum:azure.redis_cache.cachereads{service_filter}",
-            f"sum:azure.redis_cache.cachewrites{service_filter}"
+            f"avg:azure.cache_redis.processor_time{service_filter}",
+            f"avg:azure.cache_redis.used_memory_percentage{service_filter}",
+            f"avg:azure.cache_redis.server_load{service_filter}",
+            f"sum:azure.cache_redis.cache_hits{service_filter}",
+            f"sum:azure.cache_redis.cache_misses{service_filter}",
+            f"avg:azure.cache_redis.connected_clients{service_filter}",
+            f"sum:azure.cache_redis.cache_reads{service_filter}",
+            f"sum:azure.cache_redis.cache_writes{service_filter}"
         ]
     else:
         return {
@@ -1018,12 +1018,12 @@ def get_service_health_mcp(service_name, service_type="auto", time_range="1 hour
                 provider = f"Azure Redis Cache ({service_name})"
             
             azure_queries = [
-                f"avg:azure.redis_cache.percentprocessortime{service_filter}",
-                f"avg:azure.redis_cache.usedmemorypercentage{service_filter}",
-                f"avg:azure.redis_cache.serverload{service_filter}",
-                f"sum:azure.redis_cache.cachehits{service_filter}",
-                f"sum:azure.redis_cache.cachemisses{service_filter}",
-                f"avg:azure.redis_cache.connectedclients{service_filter}"
+                f"avg:azure.cache_redis.processor_time{service_filter}",
+                f"avg:azure.cache_redis.used_memory_percentage{service_filter}",
+                f"avg:azure.cache_redis.server_load{service_filter}",
+                f"sum:azure.cache_redis.cache_hits{service_filter}",
+                f"sum:azure.cache_redis.cache_misses{service_filter}",
+                f"avg:azure.cache_redis.connected_clients{service_filter}"
             ]
         
         else:
@@ -1276,14 +1276,14 @@ def get_cloud_resource_health_mcp(resource_name, resource_type, cloud_provider, 
         # Azure resource type mappings
         if resource_type == "redis":
             metric_queries = [
-                f"avg:azure.redis_cache.percentprocessortime{base_filter}",
-                f"avg:azure.redis_cache.usedmemorypercentage{base_filter}",
-                f"avg:azure.redis_cache.serverload{base_filter}",
-                f"sum:azure.redis_cache.cachehits{base_filter}",
-                f"sum:azure.redis_cache.cachemisses{base_filter}",
-                f"avg:azure.redis_cache.connectedclients{base_filter}",
-                f"sum:azure.redis_cache.cachereads{base_filter}",
-                f"sum:azure.redis_cache.cachewrites{base_filter}"
+                f"avg:azure.cache_redis.processor_time{base_filter}",
+                f"avg:azure.cache_redis.used_memory_percentage{base_filter}",
+                f"avg:azure.cache_redis.server_load{base_filter}",
+                f"sum:azure.cache_redis.cache_hits{base_filter}",
+                f"sum:azure.cache_redis.cache_misses{base_filter}",
+                f"avg:azure.cache_redis.connected_clients{base_filter}",
+                f"sum:azure.cache_redis.cache_reads{base_filter}",
+                f"sum:azure.cache_redis.cache_writes{base_filter}"
             ]
         elif resource_type == "vm":
             metric_queries = [
