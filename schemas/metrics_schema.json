@@ -259,6 +259,229 @@
           "call": "get_apm_metrics(metric_types=['hits'], time_range='1 hour')"
         }
       ]
+    },
+    {
+      "name": "get_redis_metrics",
+      "handler": "mcp.metrics:get_redis_metrics_mcp",
+      "description": "Get Redis metrics - Azure Redis Cache + AWS ElastiCache",
+      "parameters": {
+        "service": {
+          "type": "string",
+          "description": "Cache cluster/instance name",
+          "optional": true
+        },
+        "time_range": {
+          "type": "string",
+          "description": "Time range for metrics",
+          "optional": true,
+          "default": "1 hour"
+        },
+        "cloud_provider": {
+          "type": "string",
+          "description": "Cloud provider: 'aws', 'azure', or 'auto'",
+          "optional": true,
+          "default": "auto"
+        },
+        "resource_group": {
+          "type": "string",
+          "description": "Azure resource group",
+          "optional": true
+        }
+      },
+      "examples": [
+        {
+          "description": "Get Redis metrics from AWS ElastiCache",
+          "call": "get_redis_metrics(cloud_provider='aws', time_range='2 hours')"
+        },
+        {
+          "description": "Get Azure Redis metrics",
+          "call": "get_redis_metrics(service='my-redis', cloud_provider='azure', resource_group='prod-rg')"
+        },
+        {
+          "description": "Auto-detect Redis provider",
+          "call": "get_redis_metrics(service='cache-cluster')"
+        }
+      ]
+    },
+    {
+      "name": "get_sql_metrics",
+      "handler": "mcp.metrics:get_sql_metrics_mcp",
+      "description": "Get SQL metrics - Azure SQL Database + AWS RDS",
+      "parameters": {
+        "service": {
+          "type": "string",
+          "description": "Database instance name",
+          "optional": true
+        },
+        "time_range": {
+          "type": "string",
+          "description": "Time range for metrics",
+          "optional": true,
+          "default": "1 hour"
+        },
+        "cloud_provider": {
+          "type": "string",
+          "description": "Cloud provider: 'aws', 'azure', or 'auto'",
+          "optional": true,
+          "default": "auto"
+        },
+        "resource_group": {
+          "type": "string",
+          "description": "Azure resource group",
+          "optional": true
+        }
+      },
+      "examples": [
+        {
+          "description": "Get AWS RDS metrics",
+          "call": "get_sql_metrics(cloud_provider='aws', time_range='4 hours')"
+        },
+        {
+          "description": "Get Azure SQL Database metrics",
+          "call": "get_sql_metrics(service='prod-db', cloud_provider='azure', resource_group='data-rg')"
+        },
+        {
+          "description": "Auto-detect SQL provider",
+          "call": "get_sql_metrics(service='database-01')"
+        }
+      ]
+    },
+    {
+      "name": "get_compute_metrics",
+      "handler": "mcp.metrics:get_compute_metrics_mcp",
+      "description": "Get Compute metrics - Kubernetes + AWS EC2",
+      "parameters": {
+        "service": {
+          "type": "string",
+          "description": "Deployment/instance name",
+          "optional": true
+        },
+        "time_range": {
+          "type": "string",
+          "description": "Time range for metrics",
+          "optional": true,
+          "default": "1 hour"
+        },
+        "compute_type": {
+          "type": "string",
+          "description": "Compute type: 'k8s', 'ec2', or 'auto'",
+          "optional": true,
+          "default": "auto"
+        },
+        "resource_group": {
+          "type": "string",
+          "description": "For filtering resources",
+          "optional": true
+        }
+      },
+      "examples": [
+        {
+          "description": "Get Kubernetes metrics",
+          "call": "get_compute_metrics(compute_type='k8s', time_range='2 hours')"
+        },
+        {
+          "description": "Get AWS EC2 metrics",
+          "call": "get_compute_metrics(service='i-1234567890abcdef0', compute_type='ec2')"
+        },
+        {
+          "description": "Auto-detect compute type",
+          "call": "get_compute_metrics(service='frontend-deployment')"
+        }
+      ]
+    },
+    {
+      "name": "get_dynamic_resource_metrics",
+      "handler": "mcp.metrics:get_dynamic_resource_metrics_mcp",
+      "description": "Get metrics for ANY resource type using dynamic discovery - NO HARDCODING!",
+      "parameters": {
+        "resource_pattern": {
+          "type": "string",
+          "description": "Pattern to search for (e.g., 'redis', 'elasticache', 'vm', 'sql', 'ec2', 'rds')",
+          "required": true
+        },
+        "cloud_provider": {
+          "type": "string",
+          "description": "Cloud provider filter: 'aws', 'azure', 'gcp', or null for all",
+          "optional": true
+        },
+        "time_range": {
+          "type": "string",
+          "description": "Time range for metrics",
+          "optional": true,
+          "default": "1 hour"
+        },
+        "max_metrics": {
+          "type": "number",
+          "description": "Maximum number of metrics to query",
+          "optional": true,
+          "default": 20
+        }
+      },
+      "examples": [
+        {
+          "description": "Discover ElastiCache metrics intelligently",
+          "call": "get_dynamic_resource_metrics('elasticache', cloud_provider='aws')"
+        },
+        {
+          "description": "Find all Redis metrics across any provider",
+          "call": "get_dynamic_resource_metrics('redis', time_range='2 hours')"
+        },
+        {
+          "description": "Discover Azure VM metrics",
+          "call": "get_dynamic_resource_metrics('vm', cloud_provider='azure', max_metrics=15)"
+        },
+        {
+          "description": "Find AWS EC2 metrics",
+          "call": "get_dynamic_resource_metrics('ec2', cloud_provider='aws')"
+        }
+      ]
+    },
+    {
+      "name": "get_cloud_resource_health",
+      "handler": "mcp.metrics:get_cloud_resource_health_mcp",
+      "description": "Get comprehensive health analysis for specific cloud resources",
+      "parameters": {
+        "resource_name": {
+          "type": "string",
+          "description": "Exact name of the cloud resource",
+          "required": true
+        },
+        "resource_type": {
+          "type": "string",
+          "description": "Type of resource: 'redis', 'vm', 'sql', 'ec2', 'rds'",
+          "required": true
+        },
+        "cloud_provider": {
+          "type": "string",
+          "description": "Cloud provider: 'aws' or 'azure'",
+          "required": true
+        },
+        "resource_group": {
+          "type": "string",
+          "description": "Azure resource group or AWS tag filter",
+          "optional": true
+        },
+        "time_range": {
+          "type": "string",
+          "description": "Time range for analysis",
+          "optional": true,
+          "default": "1 hour"
+        }
+      },
+      "examples": [
+        {
+          "description": "Analyze AWS ElastiCache health",
+          "call": "get_cloud_resource_health('prod-cache-01', 'redis', 'aws')"
+        },
+        {
+          "description": "Analyze Azure Redis with resource group",
+          "call": "get_cloud_resource_health('my-redis', 'redis', 'azure', resource_group='prod-rg')"
+        },
+        {
+          "description": "Analyze AWS RDS database",
+          "call": "get_cloud_resource_health('production-db', 'rds', 'aws', time_range='4 hours')"
+        }
+      ]
     }
   ]
 } 

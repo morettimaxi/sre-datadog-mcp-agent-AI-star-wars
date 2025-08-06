@@ -699,4 +699,887 @@ def get_apm_metrics_mcp(service=None, time_range="1 hour", metric_types=None, li
         },
         "time_range": time_range,
         "queries_executed": queries_made
+    }
+
+def get_redis_metrics_mcp(service=None, time_range="1 hour", cloud_provider="auto", resource_group=None, **kwargs):
+    """
+    MCP Function to get Redis metrics - Azure Redis Cache + AWS ElastiCache
+    
+    Args:
+        service (str): Cache cluster/instance name
+        time_range (str): Time range for metrics  
+        cloud_provider (str): "aws", "azure", or "auto"
+        resource_group (str): Azure resource group
+    """
+    
+    print(f"🔍 Getting Redis metrics for: {service or 'all'}")
+    
+    # Auto-detect cloud provider if needed
+    if cloud_provider == "auto":
+        cloud_provider = "azure" if resource_group else "aws"
+    
+    if cloud_provider.lower() == "aws":
+        # AWS ElastiCache - optimized queries
+        service_filter = f"{{cacheclusterid:{service}}}" if service else "{*}"
+        cache_queries = [
+            f"avg:aws.elasticache.cpucredit_usage{service_filter}",
+            f"avg:aws.elasticache.cpuutilization{service_filter}",
+            f"avg:aws.elasticache.database_memory_usage_percentage{service_filter}",
+            f"sum:aws.elasticache.cache_hits{service_filter}",
+            f"sum:aws.elasticache.cache_misses{service_filter}",
+            f"avg:aws.elasticache.curr_connections{service_filter}",
+            f"avg:aws.elasticache.freeable_memory{service_filter}",
+            f"avg:aws.elasticache.network_bytes_in{service_filter}",
+            f"avg:aws.elasticache.network_bytes_out{service_filter}"
+        ]
+        provider_name = f"AWS ElastiCache ({service or 'all clusters'})"
+        
+    elif cloud_provider.lower() == "azure":
+        # Azure Redis Cache - optimized queries
+        if resource_group:
+            service_filter = f"{{name:{service},resource_group:{resource_group}}}" if service else f"{{resource_group:{resource_group}}}"
+            provider_name = f"Azure Redis Cache ({service or 'all'} in {resource_group})"
+        else:
+            service_filter = f"{{name:{service}}}" if service else "{*}"
+            provider_name = f"Azure Redis Cache ({service or 'all'})"
+            
+        cache_queries = [
+            f"avg:azure.redis_cache.percentprocessortime{service_filter}",
+            f"avg:azure.redis_cache.usedmemorypercentage{service_filter}",
+            f"avg:azure.redis_cache.serverload{service_filter}",
+            f"sum:azure.redis_cache.cachehits{service_filter}",
+            f"sum:azure.redis_cache.cachemisses{service_filter}",
+            f"avg:azure.redis_cache.connectedclients{service_filter}",
+            f"sum:azure.redis_cache.cachereads{service_filter}",
+            f"sum:azure.redis_cache.cachewrites{service_filter}"
+        ]
+    else:
+        return {
+            "success": False,
+            "error": f"Unsupported cloud provider: {cloud_provider}. Use 'aws' or 'azure'",
+            "data": []
+        }
+    
+    # Execute queries
+    results = []
+    successful_queries = []
+    failed_queries = []
+    
+    print(f"🚀 Executing {len(cache_queries)} Redis metric queries...")
+    
+    for query in cache_queries:
+        result = query_metrics_mcp(query=query, time_range=time_range, **kwargs)
+        if result['success'] and result['data']:
+            results.extend(result['data'])
+            successful_queries.append(query)
+        else:
+            failed_queries.append(query)
+    
+    return {
+        "success": True,
+        "error": None,
+        "data": results,
+        "cloud_provider": provider_name,
+        "service": service,
+        "resource_group": resource_group,
+        "time_range": time_range,
+        "successful_queries": successful_queries,
+        "failed_queries": failed_queries,
+        "metrics_with_data": len(results)
+    }
+
+def get_sql_metrics_mcp(service=None, time_range="1 hour", cloud_provider="auto", resource_group=None, **kwargs):
+    """
+    MCP Function to get SQL metrics - Azure SQL Database + AWS RDS
+    
+    Args:
+        service (str): Database instance name
+        time_range (str): Time range for metrics
+        cloud_provider (str): "aws", "azure", or "auto" 
+        resource_group (str): Azure resource group
+    """
+    
+    print(f"🔍 Getting SQL metrics for: {service or 'all'}")
+    
+    # Auto-detect cloud provider if needed
+    if cloud_provider == "auto":
+        cloud_provider = "azure" if resource_group else "aws"
+    
+    if cloud_provider.lower() == "aws":
+        # AWS RDS - optimized queries
+        service_filter = f"{{dbinstanceidentifier:{service}}}" if service else "{*}"
+        sql_queries = [
+            f"avg:aws.rds.cpuutilization{service_filter}",
+            f"avg:aws.rds.database_connections{service_filter}",
+            f"avg:aws.rds.freeable_memory{service_filter}",
+            f"avg:aws.rds.read_latency{service_filter}",
+            f"avg:aws.rds.write_latency{service_filter}",
+            f"sum:aws.rds.read_iops{service_filter}",
+            f"sum:aws.rds.write_iops{service_filter}",
+            f"avg:aws.rds.free_storage_space{service_filter}"
+        ]
+        provider_name = f"AWS RDS ({service or 'all databases'})"
+        
+    elif cloud_provider.lower() == "azure":
+        # Azure SQL Database - optimized queries  
+        if resource_group:
+            service_filter = f"{{name:{service},resource_group:{resource_group}}}" if service else f"{{resource_group:{resource_group}}}"
+            provider_name = f"Azure SQL Database ({service or 'all'} in {resource_group})"
+        else:
+            service_filter = f"{{name:{service}}}" if service else "{*}"
+            provider_name = f"Azure SQL Database ({service or 'all'})"
+            
+        sql_queries = [
+            f"avg:azure.sql_database.cpu_percent{service_filter}",
+            f"avg:azure.sql_database.dtu_consumption_percent{service_filter}",
+            f"avg:azure.sql_database.storage_percent{service_filter}",
+            f"sum:azure.sql_database.connection_successful{service_filter}",
+            f"sum:azure.sql_database.connection_failed{service_filter}",
+            f"avg:azure.sql_database.deadlock{service_filter}",
+            f"sum:azure.sql_database.blocked_by_firewall{service_filter}"
+        ]
+    else:
+        return {
+            "success": False,
+            "error": f"Unsupported cloud provider: {cloud_provider}. Use 'aws' or 'azure'",
+            "data": []
+        }
+    
+    # Execute queries
+    results = []
+    successful_queries = []
+    failed_queries = []
+    
+    print(f"🚀 Executing {len(sql_queries)} SQL metric queries...")
+    
+    for query in sql_queries:
+        result = query_metrics_mcp(query=query, time_range=time_range, **kwargs)
+        if result['success'] and result['data']:
+            results.extend(result['data'])
+            successful_queries.append(query)
+        else:
+            failed_queries.append(query)
+    
+    return {
+        "success": True,
+        "error": None,
+        "data": results,
+        "cloud_provider": provider_name,
+        "service": service,
+        "resource_group": resource_group,
+        "time_range": time_range,
+        "successful_queries": successful_queries,
+        "failed_queries": failed_queries,
+        "metrics_with_data": len(results)
+    }
+
+def get_compute_metrics_mcp(service=None, time_range="1 hour", compute_type="auto", resource_group=None, **kwargs):
+    """
+    MCP Function to get Compute metrics - Kubernetes + AWS EC2
+    
+    Args:
+        service (str): Deployment/instance name
+        time_range (str): Time range for metrics
+        compute_type (str): "k8s", "ec2", or "auto"
+        resource_group (str): For filtering
+    """
+    
+    print(f"🔍 Getting Compute metrics for: {service or 'all'}")
+    
+    # Auto-detect compute type
+    if compute_type == "auto":
+        # Simple heuristic: if resource_group or service contains k8s/kube keywords
+        service_lower = (service or '').lower()
+        if any(keyword in service_lower for keyword in ['k8s', 'kube', 'deployment', 'pod']):
+            compute_type = "k8s"
+        else:
+            compute_type = "ec2"  # Default to EC2
+    
+    if compute_type.lower() == "k8s":
+        # Kubernetes - optimized queries
+        if service:
+            service_filter = f"{{kube_deployment:{service}}}"
+        else:
+            service_filter = "{*}"
+            
+        compute_queries = [
+            f"avg:kubernetes.cpu.usage.total{service_filter}",
+            f"avg:kubernetes.memory.usage{service_filter}",
+            f"avg:kubernetes.memory.working_set{service_filter}",
+            f"sum:kubernetes.containers.running{service_filter}",
+            f"sum:kubernetes.containers.terminated{service_filter}",
+            f"avg:kubernetes.cpu.limits{service_filter}",
+            f"avg:kubernetes.memory.limits{service_filter}",
+            f"sum:kubernetes.pods.running{service_filter}"
+        ]
+        provider_name = f"Kubernetes ({service or 'all deployments'})"
+        
+    elif compute_type.lower() == "ec2":
+        # AWS EC2 - optimized queries
+        service_filter = f"{{instanceid:{service}}}" if service else "{*}"
+        compute_queries = [
+            f"avg:aws.ec2.cpuutilization{service_filter}",
+            f"avg:aws.ec2.cpucredit_usage{service_filter}",
+            f"avg:aws.ec2.cpucredit_balance{service_filter}",
+            f"avg:aws.ec2.disk_read_bytes{service_filter}",
+            f"avg:aws.ec2.disk_write_bytes{service_filter}",
+            f"avg:aws.ec2.network_in{service_filter}",
+            f"avg:aws.ec2.network_out{service_filter}",
+            f"sum:aws.ec2.status_check_failed{service_filter}"
+        ]
+        provider_name = f"AWS EC2 ({service or 'all instances'})"
+        
+    else:
+        return {
+            "success": False,
+            "error": f"Unsupported compute type: {compute_type}. Use 'k8s' or 'ec2'",
+            "data": []
+        }
+    
+    # Execute queries
+    results = []
+    successful_queries = []
+    failed_queries = []
+    
+    print(f"🚀 Executing {len(compute_queries)} Compute metric queries...")
+    
+    for query in compute_queries:
+        result = query_metrics_mcp(query=query, time_range=time_range, **kwargs)
+        if result['success'] and result['data']:
+            results.extend(result['data'])
+            successful_queries.append(query)
+        else:
+            failed_queries.append(query)
+    
+    return {
+        "success": True,
+        "error": None,
+        "data": results,
+        "compute_type": compute_type,
+        "cloud_provider": provider_name,
+        "service": service,
+        "time_range": time_range,
+        "successful_queries": successful_queries,
+        "failed_queries": failed_queries,
+        "metrics_with_data": len(results)
+    }
+
+def get_service_health_mcp(service_name, service_type="auto", time_range="1 hour", resource_group=None, cloud_provider=None, **kwargs):
+    """
+    MCP Function to get a comprehensive health report of a cloud resource or service
+    
+    Args:
+        service_name (str): Name of the resource/service/cluster to analyze
+        service_type (str): Type of resource ("redis", "k8s", "app", "system", "auto")
+        time_range (str): Time range for analysis
+        resource_group (str): Azure resource group or AWS tag filter
+        cloud_provider (str): "aws", "azure", or "auto" for auto-detection
+    """
+    
+    # Auto-detect service type if not specified
+    if service_type == "auto":
+        service_name_lower = service_name.lower()
+        if any(keyword in service_name_lower for keyword in ['redis', 'elasticache', 'cache']):
+            service_type = "redis"
+        elif any(keyword in service_name_lower for keyword in ['k8s', 'kubernetes', 'pod', 'deployment']):
+            service_type = "k8s"
+        elif any(keyword in service_name_lower for keyword in ['api', 'web', 'app', 'service']):
+            service_type = "app"
+        else:
+            service_type = "system"
+    
+    print(f"🔍 Analyzing {service_type} service: {service_name}")
+    
+    # Get metrics based on service type and cloud provider
+    if service_type == "redis":
+        if cloud_provider == "aws" or (cloud_provider == "auto" and not resource_group):
+            # AWS ElastiCache - use cacheclusterid or cache node filters
+            service_filter = f"{{cacheclusterid:{service_name}}}" if service_name else "{*}"
+            if resource_group:  # AWS uses tags for grouping
+                service_filter = f"{{cacheclusterid:{service_name},tag_group:{resource_group}}}"
+            
+            aws_queries = [
+                f"avg:aws.elasticache.cpucredit_usage{service_filter}",
+                f"avg:aws.elasticache.cpu_utilization{service_filter}",
+                f"avg:aws.elasticache.database_memory_usage_percentage{service_filter}",
+                f"sum:aws.elasticache.cache_hits{service_filter}",
+                f"sum:aws.elasticache.cache_misses{service_filter}",
+                f"avg:aws.elasticache.curr_connections{service_filter}"
+            ]
+            provider = f"AWS ElastiCache ({service_name})"
+            
+        elif cloud_provider == "azure" or (cloud_provider == "auto" and resource_group):
+            # Azure Redis Cache - use name and resource_group filters
+            if resource_group:
+                service_filter = f"{{name:{service_name},resource_group:{resource_group}}}"
+                provider = f"Azure Redis Cache ({service_name} in {resource_group})"
+            else:
+                service_filter = f"{{name:{service_name}}}" if service_name else "{*}"
+                provider = f"Azure Redis Cache ({service_name})"
+            
+            azure_queries = [
+                f"avg:azure.redis_cache.percentprocessortime{service_filter}",
+                f"avg:azure.redis_cache.usedmemorypercentage{service_filter}",
+                f"avg:azure.redis_cache.serverload{service_filter}",
+                f"sum:azure.redis_cache.cachehits{service_filter}",
+                f"sum:azure.redis_cache.cachemisses{service_filter}",
+                f"avg:azure.redis_cache.connectedclients{service_filter}"
+            ]
+        
+        else:
+            # Try both if auto-detection
+            aws_result = get_redis_cache_metrics_mcp(
+                service=service_name, 
+                time_range=time_range, 
+                cloud_provider="aws", 
+                **kwargs
+            )
+            azure_result = get_redis_cache_metrics_mcp(
+                service=service_name, 
+                time_range=time_range, 
+                cloud_provider="azure", 
+                **kwargs
+            )
+            
+            # Use whichever has data
+            if aws_result['metrics_with_data'] > 0:
+                metrics_result = aws_result
+                provider = "AWS ElastiCache"
+            elif azure_result['metrics_with_data'] > 0:
+                metrics_result = azure_result
+                provider = "Azure Redis Cache"
+            else:
+                return {
+                    "success": False,
+                    "error": f"No Redis metrics found for resource '{service_name}' in AWS or Azure",
+                    "data": {}
+                }
+        
+        # Execute queries if we have specific cloud provider
+        if 'aws_queries' in locals():
+            results = []
+            for query in aws_queries:
+                result = query_metrics_mcp(query=query, time_range=time_range, **kwargs)
+                if result['success'] and result['data']:
+                    results.extend(result['data'])
+            metrics_result = {"success": True, "data": results}
+            
+        elif 'azure_queries' in locals():
+            results = []
+            for query in azure_queries:
+                result = query_metrics_mcp(query=query, time_range=time_range, **kwargs)
+                if result['success'] and result['data']:
+                    results.extend(result['data'])
+            metrics_result = {"success": True, "data": results}
+            
+    elif service_type == "k8s":
+        metrics_result = get_kubernetes_metrics_mcp(
+            service=service_name, 
+            time_range=time_range, 
+            **kwargs
+        )
+        provider = "Kubernetes"
+        
+    elif service_type == "app":
+        metrics_result = get_application_metrics_mcp(
+            service=service_name, 
+            time_range=time_range, 
+            **kwargs
+        )
+        provider = "Application/APM"
+        
+    else:  # system
+        metrics_result = get_system_metrics_mcp(
+            time_range=time_range, 
+            host=service_name, 
+            **kwargs
+        )
+        provider = "System"
+    
+    if not metrics_result['success'] or not metrics_result['data']:
+        return {
+            "success": False,
+            "error": f"No metrics data found for {service_type} service '{service_name}'",
+            "data": {}
+        }
+    
+    # Analyze the health
+    metrics_data = metrics_result['data']
+    health_analysis = {
+        "resource_name": service_name,
+        "resource_type": service_type,
+        "cloud_provider": provider,
+        "resource_group": resource_group,
+        "status": "unknown",
+        "summary": {},
+        "alerts": [],
+        "recommendations": [],
+        "key_metrics": [],
+        "time_range": time_range
+    }
+    
+    # Analyze key metrics
+    cpu_metrics = []
+    memory_metrics = []
+    performance_metrics = []
+    error_metrics = []
+    
+    for metric in metrics_data:
+        metric_name = metric.get('metric', '').lower()
+        latest_value = metric.get('latest_value')
+        avg_value = metric.get('avg_value')
+        
+        if latest_value is None:
+            continue
+            
+        # Categorize metrics
+        if any(term in metric_name for term in ['cpu', 'processor']):
+            cpu_metrics.append({
+                "name": metric['metric'],
+                "value": latest_value,
+                "avg": avg_value,
+                "scope": metric.get('scope', {})
+            })
+        elif any(term in metric_name for term in ['memory', 'mem']):
+            memory_metrics.append({
+                "name": metric['metric'],
+                "value": latest_value,
+                "avg": avg_value,
+                "scope": metric.get('scope', {})
+            })
+        elif any(term in metric_name for term in ['response_time', 'latency', 'duration']):
+            performance_metrics.append({
+                "name": metric['metric'],
+                "value": latest_value,
+                "avg": avg_value,
+                "scope": metric.get('scope', {})
+            })
+        elif any(term in metric_name for term in ['error', 'miss']):
+            error_metrics.append({
+                "name": metric['metric'],
+                "value": latest_value,
+                "avg": avg_value,
+                "scope": metric.get('scope', {})
+            })
+    
+    # Generate health status and alerts
+    status_score = 100
+    
+    # CPU Analysis
+    if cpu_metrics:
+        avg_cpu = sum(m['value'] for m in cpu_metrics) / len(cpu_metrics)
+        health_analysis["summary"]["cpu_usage"] = f"{avg_cpu:.1f}%"
+        
+        if avg_cpu > 90:
+            health_analysis["alerts"].append("🔴 CRITICAL: CPU usage very high (>90%)")
+            health_analysis["recommendations"].append("Scale up resources or optimize CPU usage")
+            status_score -= 30
+        elif avg_cpu > 75:
+            health_analysis["alerts"].append("🟡 WARNING: CPU usage high (>75%)")
+            health_analysis["recommendations"].append("Monitor CPU usage closely")
+            status_score -= 15
+        else:
+            health_analysis["alerts"].append("✅ CPU usage is healthy")
+    
+    # Memory Analysis
+    if memory_metrics:
+        avg_memory = sum(m['value'] for m in memory_metrics) / len(memory_metrics)
+        health_analysis["summary"]["memory_usage"] = f"{avg_memory:.1f}%"
+        
+        if avg_memory > 95:
+            health_analysis["alerts"].append("🔴 CRITICAL: Memory usage very high (>95%)")
+            health_analysis["recommendations"].append("Increase memory or check for memory leaks")
+            status_score -= 30
+        elif avg_memory > 80:
+            health_analysis["alerts"].append("🟡 WARNING: Memory usage high (>80%)")
+            health_analysis["recommendations"].append("Monitor memory usage")
+            status_score -= 15
+        else:
+            health_analysis["alerts"].append("✅ Memory usage is healthy")
+    
+    # Performance Analysis (for Redis/App services)
+    if performance_metrics and service_type in ['redis', 'app']:
+        avg_response = sum(m['value'] for m in performance_metrics) / len(performance_metrics)
+        health_analysis["summary"]["avg_response_time"] = f"{avg_response:.2f}ms"
+        
+        if avg_response > 1000:  # >1 second
+            health_analysis["alerts"].append("🔴 CRITICAL: High response time (>1s)")
+            health_analysis["recommendations"].append("Optimize queries or increase cache size")
+            status_score -= 25
+        elif avg_response > 500:  # >500ms
+            health_analysis["alerts"].append("🟡 WARNING: Elevated response time (>500ms)")
+            status_score -= 10
+        else:
+            health_analysis["alerts"].append("✅ Response time is good")
+    
+    # Error Analysis
+    if error_metrics:
+        total_errors = sum(m['value'] for m in error_metrics)
+        health_analysis["summary"]["errors"] = f"{total_errors:.0f}"
+        
+        if total_errors > 100:
+            health_analysis["alerts"].append("🔴 CRITICAL: High error count")
+            health_analysis["recommendations"].append("Investigate error sources immediately")
+            status_score -= 20
+        elif total_errors > 10:
+            health_analysis["alerts"].append("🟡 WARNING: Some errors detected")
+            status_score -= 10
+        else:
+            health_analysis["alerts"].append("✅ Error rate is low")
+    
+    # Set overall status
+    if status_score >= 80:
+        health_analysis["status"] = "🟢 HEALTHY"
+    elif status_score >= 60:
+        health_analysis["status"] = "🟡 WARNING"
+    else:
+        health_analysis["status"] = "🔴 CRITICAL"
+    
+    # Add key metrics for detailed view
+    health_analysis["key_metrics"] = metrics_data[:10]  # First 10 metrics
+    
+    # Add summary message
+    metric_count = len(metrics_data)
+    health_analysis["summary"]["total_metrics"] = metric_count
+    health_analysis["summary"]["status_score"] = status_score
+    
+    return {
+        "success": True,
+        "error": None,
+        "data": health_analysis
+    }
+
+def get_cloud_resource_health_mcp(resource_name, resource_type, cloud_provider, resource_group=None, time_range="1 hour", **kwargs):
+    """
+    MCP Function specifically for cloud resources with proper naming conventions
+    
+    Args:
+        resource_name (str): Exact name of the cloud resource
+        resource_type (str): Type of resource ("redis", "vm", "sql", "storage", "lb")
+        cloud_provider (str): "aws" or "azure"
+        resource_group (str): Azure resource group or AWS tag/region filter
+        time_range (str): Time range for analysis
+    """
+    
+    print(f"🔍 Analyzing {cloud_provider.upper()} {resource_type} resource: {resource_name}")
+    if resource_group:
+        print(f"📁 Resource group/filter: {resource_group}")
+    
+    # Build cloud-specific filters
+    if cloud_provider.lower() == "azure":
+        if resource_group:
+            base_filter = f"{{name:{resource_name},resource_group:{resource_group}}}"
+        else:
+            base_filter = f"{{name:{resource_name}}}"
+        provider_display = f"Azure {resource_type.upper()}"
+        
+        # Azure resource type mappings
+        if resource_type == "redis":
+            metric_queries = [
+                f"avg:azure.redis_cache.percentprocessortime{base_filter}",
+                f"avg:azure.redis_cache.usedmemorypercentage{base_filter}",
+                f"avg:azure.redis_cache.serverload{base_filter}",
+                f"sum:azure.redis_cache.cachehits{base_filter}",
+                f"sum:azure.redis_cache.cachemisses{base_filter}",
+                f"avg:azure.redis_cache.connectedclients{base_filter}",
+                f"sum:azure.redis_cache.cachereads{base_filter}",
+                f"sum:azure.redis_cache.cachewrites{base_filter}"
+            ]
+        elif resource_type == "vm":
+            metric_queries = [
+                f"avg:azure.vm.percentage_cpu{base_filter}",
+                f"avg:azure.vm.available_memory_bytes{base_filter}",
+                f"avg:azure.vm.disk_read_bytes{base_filter}",
+                f"avg:azure.vm.disk_write_bytes{base_filter}",
+                f"avg:azure.vm.network_in{base_filter}",
+                f"avg:azure.vm.network_out{base_filter}"
+            ]
+        elif resource_type == "sql":
+            metric_queries = [
+                f"avg:azure.sql_database.cpu_percent{base_filter}",
+                f"avg:azure.sql_database.dtu_consumption_percent{base_filter}",
+                f"avg:azure.sql_database.storage_percent{base_filter}",
+                f"sum:azure.sql_database.connection_failed{base_filter}",
+                f"sum:azure.sql_database.connection_successful{base_filter}"
+            ]
+        else:
+            return {
+                "success": False,
+                "error": f"Azure resource type '{resource_type}' not supported yet",
+                "data": {}
+            }
+    
+    elif cloud_provider.lower() == "aws":
+        if resource_group:  # AWS uses tags
+            base_filter = f"{{tag_group:{resource_group}}}"
+        else:
+            base_filter = "{*}"
+        provider_display = f"AWS {resource_type.upper()}"
+        
+        # AWS resource type mappings
+        if resource_type == "redis":
+            cache_filter = f"{{cacheclusterid:{resource_name}}}" if not resource_group else f"{{cacheclusterid:{resource_name},tag_group:{resource_group}}}"
+            metric_queries = [
+                f"avg:aws.elasticache.cpucredit_usage{cache_filter}",
+                f"avg:aws.elasticache.cpu_utilization{cache_filter}",
+                f"avg:aws.elasticache.database_memory_usage_percentage{cache_filter}",
+                f"sum:aws.elasticache.cache_hits{cache_filter}",
+                f"sum:aws.elasticache.cache_misses{cache_filter}",
+                f"avg:aws.elasticache.curr_connections{cache_filter}",
+                f"avg:aws.elasticache.network_bytes_in{cache_filter}",
+                f"avg:aws.elasticache.network_bytes_out{cache_filter}"
+            ]
+        elif resource_type == "ec2":
+            instance_filter = f"{{instanceid:{resource_name}}}" if not resource_group else f"{{instanceid:{resource_name},tag_group:{resource_group}}}"
+            metric_queries = [
+                f"avg:aws.ec2.cpu_utilization{instance_filter}",
+                f"avg:aws.ec2.disk_read_bytes{instance_filter}",
+                f"avg:aws.ec2.disk_write_bytes{instance_filter}",
+                f"avg:aws.ec2.network_in{instance_filter}",
+                f"avg:aws.ec2.network_out{instance_filter}"
+            ]
+        elif resource_type == "rds":
+            db_filter = f"{{dbinstanceidentifier:{resource_name}}}" if not resource_group else f"{{dbinstanceidentifier:{resource_name},tag_group:{resource_group}}}"
+            metric_queries = [
+                f"avg:aws.rds.cpu_utilization{db_filter}",
+                f"avg:aws.rds.database_connections{db_filter}",
+                f"avg:aws.rds.freeable_memory{db_filter}",
+                f"avg:aws.rds.read_latency{db_filter}",
+                f"avg:aws.rds.write_latency{db_filter}"
+            ]
+        else:
+            return {
+                "success": False,
+                "error": f"AWS resource type '{resource_type}' not supported yet",
+                "data": {}
+            }
+    
+    else:
+        return {
+            "success": False,
+            "error": f"Cloud provider '{cloud_provider}' not supported. Use 'aws' or 'azure'",
+            "data": {}
+        }
+    
+    # Execute queries
+    results = []
+    successful_queries = []
+    failed_queries = []
+    
+    for query in metric_queries:
+        result = query_metrics_mcp(query=query, time_range=time_range, **kwargs)
+        if result['success'] and result['data']:
+            results.extend(result['data'])
+            successful_queries.append(query)
+        else:
+            failed_queries.append(query)
+    
+    if not results:
+        return {
+            "success": False,
+            "error": f"No metrics found for {cloud_provider} {resource_type} '{resource_name}'",
+            "data": {},
+            "failed_queries": failed_queries
+        }
+    
+    # Analyze health (reuse the analysis logic)
+    health_analysis = {
+        "resource_name": resource_name,
+        "resource_type": resource_type,
+        "cloud_provider": provider_display,
+        "resource_group": resource_group,
+        "status": "unknown",
+        "summary": {},
+        "alerts": [],
+        "recommendations": [],
+        "raw_metrics": results,
+        "time_range": time_range,
+        "successful_queries": len(successful_queries),
+        "failed_queries": len(failed_queries)
+    }
+    
+    # Quick health scoring
+    total_metrics = len(results)
+    health_score = 100
+    
+    for metric in results:
+        if metric.get('latest_value') is not None:
+            value = metric['latest_value']
+            metric_name = metric.get('metric', '').lower()
+            
+            # CPU analysis
+            if 'cpu' in metric_name:
+                if value > 90:
+                    health_analysis["alerts"].append(f"🔴 High CPU: {value:.1f}%")
+                    health_score -= 25
+                elif value > 75:
+                    health_analysis["alerts"].append(f"🟡 Elevated CPU: {value:.1f}%")
+                    health_score -= 10
+                else:
+                    health_analysis["alerts"].append(f"✅ CPU OK: {value:.1f}%")
+            
+            # Memory analysis
+            elif 'memory' in metric_name or 'mem' in metric_name:
+                if value > 90:
+                    health_analysis["alerts"].append(f"🔴 High Memory: {value:.1f}%")
+                    health_score -= 25
+                elif value > 80:
+                    health_analysis["alerts"].append(f"🟡 Elevated Memory: {value:.1f}%")
+                    health_score -= 10
+                else:
+                    health_analysis["alerts"].append(f"✅ Memory OK: {value:.1f}%")
+    
+    # Set overall status
+    if health_score >= 80:
+        health_analysis["status"] = "🟢 HEALTHY"
+    elif health_score >= 60:
+        health_analysis["status"] = "🟡 WARNING"
+    else:
+        health_analysis["status"] = "🔴 CRITICAL"
+    
+    health_analysis["summary"]["health_score"] = health_score
+    health_analysis["summary"]["total_metrics"] = total_metrics
+    
+    return {
+        "success": True,
+        "error": None,
+        "data": health_analysis
+    }
+
+def get_dynamic_resource_metrics_mcp(resource_pattern, cloud_provider=None, time_range="1 hour", max_metrics=20, **kwargs):
+    """
+    MCP Function to get metrics for ANY resource type using dynamic discovery - NO HARDCODING!
+    
+    Args:
+        resource_pattern (str): Pattern to search for (e.g., "redis", "elasticache", "vm", "sql")
+        cloud_provider (str): "aws", "azure", "gcp", or None for all
+        time_range (str): Time range for metrics
+        max_metrics (int): Maximum number of metrics to query
+    """
+    
+    print(f"🔍 Dynamic discovery for pattern: '{resource_pattern}'")
+    
+    # Step 1: Auto-discover all metrics matching the pattern
+    search_result = search_metrics_mcp(metric_name=resource_pattern)
+    if not search_result['success']:
+        return {
+            "success": False,
+            "error": f"Failed to search for '{resource_pattern}' metrics: {search_result['error']}",
+            "data": []
+        }
+    
+    all_metrics = [m['name'] for m in search_result['data']]
+    print(f"📊 Found {len(all_metrics)} metrics matching '{resource_pattern}'")
+    
+    # Step 2: Filter by cloud provider if specified
+    if cloud_provider:
+        cloud_filtered = [m for m in all_metrics if cloud_provider.lower() in m.lower()]
+        print(f"☁️ Filtered to {len(cloud_filtered)} {cloud_provider} metrics")
+        all_metrics = cloud_filtered
+    
+    if not all_metrics:
+        return {
+            "success": False,
+            "error": f"No metrics found for pattern '{resource_pattern}'" + (f" in {cloud_provider}" if cloud_provider else ""),
+            "data": []
+        }
+    
+    # Step 3: Intelligent metric prioritization (NO HARDCODING!)
+    scoring = {}
+    
+    # Priority words and their scores
+    priority_terms = {
+        'cpu': 10, 'processor': 10, 'utilization': 8,
+        'memory': 9, 'mem': 9, 'ram': 9,
+        'hits': 8, 'misses': 8, 'cache': 7,
+        'connections': 7, 'clients': 7, 'conn': 7,
+        'network': 6, 'bytes': 6, 'throughput': 6,
+        'errors': 9, 'failures': 9, 'exceptions': 9,
+        'latency': 8, 'response': 8, 'duration': 8,
+        'disk': 7, 'storage': 7, 'io': 7,
+        'load': 8, 'usage': 7, 'percent': 7
+    }
+    
+    for metric in all_metrics:
+        score = 0
+        metric_lower = metric.lower()
+        
+        # Score based on priority terms
+        for term, points in priority_terms.items():
+            if term in metric_lower:
+                score += points
+        
+        # Bonus for common aggregatable metrics
+        if any(word in metric_lower for word in ['total', 'count', 'rate']):
+            score += 3
+        
+        # Penalty for very specific/niche metrics
+        if len(metric.split('.')) > 4:  # Very nested metrics
+            score -= 2
+        
+        scoring[metric] = score
+    
+    # Step 4: Select top metrics
+    sorted_metrics = sorted(scoring.items(), key=lambda x: x[1], reverse=True)
+    selected_metrics = [metric for metric, score in sorted_metrics[:max_metrics] if score > 0]
+    
+    print(f"🎯 Selected top {len(selected_metrics)} metrics by intelligence score")
+    
+    # Step 5: Smart aggregation detection
+    queries = []
+    for metric in selected_metrics:
+        metric_lower = metric.lower()
+        
+        # Determine aggregation intelligently
+        if any(term in metric_lower for term in ['count', 'total', 'hits', 'misses', 'errors', 'requests']):
+            aggregation = "sum"
+        elif any(term in metric_lower for term in ['rate', 'percent', 'ratio']):
+            aggregation = "avg"
+        elif any(term in metric_lower for term in ['latency', 'duration', 'time']):
+            aggregation = "avg"
+        elif any(term in metric_lower for term in ['max', 'peak']):
+            aggregation = "max"
+        elif any(term in metric_lower for term in ['min', 'low']):
+            aggregation = "min"
+        else:
+            aggregation = "avg"  # Default safe choice
+        
+        queries.append(f"{aggregation}:{metric}{{*}}")
+    
+    # Step 6: Execute queries
+    results = []
+    successful_queries = []
+    failed_queries = []
+    
+    print(f"🚀 Executing {len(queries)} intelligent queries...")
+    
+    for query in queries:
+        result = query_metrics_mcp(query=query, time_range=time_range, **kwargs)
+        if result['success'] and result['data']:
+            results.extend(result['data'])
+            successful_queries.append(query)
+        else:
+            failed_queries.append(query)
+    
+    # Step 7: Intelligent analysis
+    analysis = {
+        "resource_pattern": resource_pattern,
+        "cloud_provider": cloud_provider,
+        "metrics_found": len(all_metrics),
+        "metrics_selected": len(selected_metrics),
+        "metrics_with_data": len(results),
+        "top_metrics": selected_metrics[:10],
+        "queries_successful": len(successful_queries),
+        "queries_failed": len(failed_queries),
+        "time_range": time_range
+    }
+    
+    return {
+        "success": True,
+        "error": None,
+        "data": results,
+        "analysis": analysis,
+        "discovery_method": "Dynamic Intelligence (Zero Hardcoding)",
+        "successful_queries": successful_queries,
+        "failed_queries": failed_queries
     } 
